@@ -14,6 +14,7 @@ import numpy as np
 from ecgdetectors import Detectors
 import os
 from typing import List, Tuple
+import tensorflow as tf
 
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
 def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
@@ -39,25 +40,20 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         ecg_name und eure Diagnose
     '''
 
+
 #------------------------------------------------------------------------------
-# Euer Code ab hier  
-    with open(model_name, 'rb') as f:  
-        th_opt = np.load(f)         # Lade simples Model (1 Parameter)
-
-    detectors = Detectors(fs)        # Initialisierung des QRS-Detektors
-
+# Euer Code ab hier
     predictions = list()
-    
-    for idx,ecg_lead in enumerate(ecg_leads):
-        r_peaks = detectors.hamilton_detector(ecg_lead)     # Detektion der QRS-Komplexe
-        sdnn = np.std(np.diff(r_peaks)/fs*1000) 
-        if sdnn < th_opt:
-            predictions.append((ecg_names[idx], 'N'))
-        else:
-            predictions.append((ecg_names[idx], 'A'))
-        if ((idx+1) % 100)==0:
-            print(str(idx+1) + "\t Dateien wurden verarbeitet.")
-            
+
+    #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
+
+    # load previously trained model
+    model = tf.keras.models.load_model('saved_model/my_model')
+    # Check model architecture
+    model.summary()
+
+    predictions = model.predict(ecg_leads)
+
             
 #------------------------------------------------------------------------------    
     return predictions # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
