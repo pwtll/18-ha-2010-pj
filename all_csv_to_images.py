@@ -13,7 +13,7 @@ import cv2
 
 # directory = input("Enter the directory where you want to save the images: ")
 directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/'
-image_size = 512
+image_size = 128  # 512
 
 
 def main(directory):
