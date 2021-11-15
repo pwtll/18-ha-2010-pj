@@ -41,7 +41,8 @@ import torch
 
 # ToDo: preprocess data into images and train the model with image data instead of time series data
 # ToDo: 1st attempt: simple images of ecg signal
-# ToDo: 2nd attempt: convert ecg signal via FFT into images
+# ToDo: compare FFT-spectrograms using raw & normalized data
+# ToDo: 2nd attempt: convert ecg signal via FFT into images (256x256 spectrogram with logarithmic frequency range from 0-sampling_rate/2) ToDo: test accuracy with different colorcodings)
 # ToDo: 3rd attempt: convert ecg signal via Wavelet-transformation into images
 def preprocess_data(ecg_leads_, ecg_labels_):
     ecg_leads_list = list()
@@ -64,7 +65,7 @@ def preprocess_data(ecg_leads_, ecg_labels_):
     # convert categorical labels into numerical
     _, ecg_labels_array = np.unique(ecg_labels_array, return_inverse=True)  # Note: first variable _ is unused
 
-    X_train, X_test, y_train, y_test = train_test_split(ecg_leads_array, ecg_labels_array, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(ecg_leads_array, ecg_labels_array, test_size=0.2, random_state=0)    # ToDo: stratify data to ensure same class proportions
     print(X_train.shape, y_train.shape)
     print(X_test.shape, y_test.shape)
 
