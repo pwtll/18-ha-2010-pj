@@ -4,8 +4,8 @@ Source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D
 
 import csv
 import os
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat

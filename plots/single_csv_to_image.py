@@ -2,6 +2,13 @@
 Source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/csv_to_image.py
 """
 
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.io import loadmat
+import biosppy
+import cv2
+
 path = input("Enter the path of the csv file: ")    # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
 # directory = input("Enter the directory where you want to save the images: ")
 directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/single_test/'
@@ -10,11 +17,6 @@ image_size = 512
 
 def main(path, directory):
     def segmentation(path):
-        import os
-        import numpy as np
-        from scipy.io import loadmat
-        import biosppy
-
         filename = os.path.basename(path).split('.')[0]
         csv_data = loadmat(path)
         data = np.array(csv_data['val'][0])
@@ -32,10 +34,6 @@ def main(path, directory):
         return signals, filename
 
     def signal_to_img(array, directory, filename):
-        import os
-        import cv2
-        import matplotlib.pyplot as plt
-
         if not os.path.exists(directory + filename):
             os.makedirs(directory + filename)
 

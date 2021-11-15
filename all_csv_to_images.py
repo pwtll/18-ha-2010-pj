@@ -1,11 +1,14 @@
 """
 Source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/csv_to_image.py
 """
+
+import csv
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import biosppy
-import csv
+import cv2
 
 
 # directory = input("Enter the directory where you want to save the images: ")
@@ -32,10 +35,6 @@ def main(directory):
         return signals, filename
 
     def signal_to_img(array, directory, filename):
-        import os
-        import cv2
-        import matplotlib.pyplot as plt
-
         if not os.path.exists(directory + filename):
             os.makedirs(directory + filename)
 

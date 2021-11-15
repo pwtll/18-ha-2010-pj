@@ -2,21 +2,17 @@
 Source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/csv_to_image.py
 """
 
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.io import loadmat
+
 path = input("Enter the path of the csv file: ")    # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
 directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/'
 
 
 def main(path):
     def create_stft(path):
-        import os
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import matplotlib.colors as colors
-        from scipy import signal
-        import numpy as np
-        from scipy.io import loadmat
-        import biosppy
-
         sampling_rate = 300
 
         filename = os.path.basename(path).split('.')[0]
