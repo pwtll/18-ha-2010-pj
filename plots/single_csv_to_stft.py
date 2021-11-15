@@ -41,10 +41,10 @@ def main(path):
             spine.set_visible(False)
         plt.show()
 
-        if not os.path.exists(directory + 'stft/'):
-            os.makedirs(directory + 'stft/')
+        if not os.path.exists(directory + 'stft_test/'):
+            os.makedirs(directory + 'stft_test/')
 
-        filepath = directory + 'stft/' + filename + '.png'
+        filepath = directory + 'stft_test/' + filename + '.png'
         fig.savefig(filepath, dpi=fig.dpi, bbox_inches='tight', pad_inches=0.0)
 
         return filepath

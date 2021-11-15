@@ -4,7 +4,7 @@ Source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D
 
 path = input("Enter the path of the csv file: ")    # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
 # directory = input("Enter the directory where you want to save the images: ")
-directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/test/'
+directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/single_test/'
 image_size = 512
 
 
