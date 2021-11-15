@@ -11,14 +11,8 @@ import biosppy
 import cv2
 
 
-# directory = input("Enter the directory where you want to save the images: ")
-directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/'
-image_size = 128  # 512
-
-
-def main(directory):
+def main():
     def segmentation(path):
-        filename = os.path.basename(path).split('.')[0]
         csv_data = loadmat(path)
         data = np.array(csv_data['val'][0])
         signals = []
@@ -32,40 +26,42 @@ def main(directory):
             signal = data[x:y]
             signals.append(signal)
             count += 1
-        return signals, filename
+        return signals
 
-    def signal_to_img(array, directory, filename):
-        if not os.path.exists(directory + filename):
-            os.makedirs(directory + filename)
+    def signal_to_img(array, image_directory, filename, label):
+        if not os.path.exists(image_directory + '/' + label + '/' + filename):
+            os.makedirs(image_directory + '/' + label + '/' + filename)
 
-        for count, i in enumerate(array):
-            fig = plt.figure(frameon=False)
-            plt.plot(i)
-            plt.xticks([]), plt.yticks([])
-            for spine in plt.gca().spines.values():
-                spine.set_visible(False)
+            for count, i in enumerate(array):
+                fig = plt.figure(frameon=False)
+                plt.plot(i)
+                plt.xticks([]), plt.yticks([])
+                for spine in plt.gca().spines.values():
+                    spine.set_visible(False)
 
-            new_filepath = directory + filename + '\\' + '{:05d}'.format(count) + '.png'
-            fig.savefig(new_filepath, bbox_inches='tight', pad_inches=0.0)
-            plt.close(fig)
+                new_filepath = image_directory + '/' + label + '/' + filename + '/' + '{:05d}'.format(count) + '.png'
+                fig.savefig(new_filepath, bbox_inches='tight', pad_inches=0.0)
+                plt.close(fig)
 
-            # downsampling images to desired image_size
-            im_gray = cv2.imread(new_filepath, cv2.IMREAD_GRAYSCALE)
-            im_gray = cv2.resize(im_gray, (image_size, image_size), interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
-            cv2.imwrite(new_filepath, im_gray)
-        return directory
+                # downsampling images to desired image_size
+                im_gray = cv2.imread(new_filepath, cv2.IMREAD_GRAYSCALE)
+                im_gray = cv2.resize(im_gray, (image_size, image_size), interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
+                cv2.imwrite(new_filepath, im_gray)
 
-    folder = '../training'
-    with open(os.path.join(folder, 'REFERENCE.csv')) as csv_file:
+    training_folder_csv = '../training'
+    image_directory = '../training_images'
+    image_size = 128  # 512
+
+    with open(os.path.join(training_folder_csv, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile
         for row in csv_reader:
+            filename = row[0]
+            label = row[1]
             # Lade MatLab Datei
-            array, filename = segmentation(os.path.join(folder, row[0] + '.mat'))
-            directory = signal_to_img(array, directory, filename)
+            ecg_segments = segmentation(os.path.join(training_folder_csv, filename + '.mat'))
+            signal_to_img(ecg_segments, image_directory, filename, label)
             print(str(row[0]))
 
-    return directory
-
-
-directory = main(directory)
+if __name__ == '__main__':
+    main()

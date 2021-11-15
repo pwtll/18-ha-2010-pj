@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 path = input("Enter the path of the csv file: ")    # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
-directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/'
+image_directory = '../../training_images'
 
 
 def main(path):
@@ -37,16 +37,14 @@ def main(path):
             spine.set_visible(False)
         plt.show()
 
-        if not os.path.exists(directory + 'stft_test/'):
-            os.makedirs(directory + 'stft_test/')
+        if not os.path.exists(image_directory + '/' + 'stft_test/'):
+            os.makedirs(image_directory + '/' + 'stft_test/')
 
-        filepath = directory + 'stft_test/' + filename + '.png'
+        filepath = image_directory + '/' + 'stft_test/' + filename + '.png'
         fig.savefig(filepath, dpi=fig.dpi, bbox_inches='tight', pad_inches=0.0)
 
-        return filepath
 
-    filepath = create_stft(path)
-    return filepath
+    create_stft(path)
 
 
-filepath = main(path)
+main(path)
