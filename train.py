@@ -19,7 +19,7 @@ from wettbewerb import load_references
 # 2 | WARNING | Filter out INFO & WARNING messages
 # 3 | ERROR | Filter out all messages
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 import time
 
 # ToDo: Update requirements.txt at the end of project
@@ -46,11 +46,10 @@ session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_op
 image_size = 128
 IMAGE_SIZE = [image_size, image_size]
 
-
-# ToDo: preprocess data into images and train the model with image data instead of time series data
-# ToDo: 1st attempt: simple images of ecg signal
-# ToDo: compare FFT-spectrograms using raw & normalized data
-# ToDo: 2nd attempt: convert ecg signal via FFT into images (256x256 spectrogram with logarithmic frequency range from 0-sampling_rate/2) ToDo: test accuracy with different colorcodings)
+# DONE: preprocess data into images and train the model with image data instead of time series data
+# DONE: 1st attempt: simple images of ecg signal
+# ToDo: compare STFT-spectrograms using raw & normalized data
+# ToDo: 2nd attempt: convert ecg signal via STFT into images (256x256 spectrogram with logarithmic frequency range from 0-sampling_rate/2) ToDo: test accuracy with different colorcodings)
 # ToDo: 3rd attempt: convert ecg signal via Wavelet-transformation into images
 def train_images():
     '''
@@ -68,8 +67,6 @@ def train_images():
     print(model.summary())
 
     gen = ImageDataGenerator()
-    #train_gen = gen.flow_from_directory(train_path, target_size=IMAGE_SIZE)
-    #test_gen = gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE)
 
     train_generator = gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,)
     valid_generator = gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,)

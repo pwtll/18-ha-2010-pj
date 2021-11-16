@@ -7,6 +7,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
+import cv2
 
 # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
 directory = 'c:/Users/Philipp Witulla/PycharmProjects/training_images/'
@@ -49,11 +50,19 @@ def main():
         fig.savefig(filepath, dpi=fig.dpi, bbox_inches='tight', pad_inches=0.0)
         plt.close(fig)
 
+        # downsampling images to desired image_size
+        im_gray = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+        im_gray = cv2.resize(im_gray, (image_size, image_size),
+                             interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
+        cv2.imwrite(filepath, im_gray)
+
         print(filename)
 
         return filepath
 
+    image_size = 128  # 512
     folder = '../training'
+
     with open(os.path.join(folder, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile

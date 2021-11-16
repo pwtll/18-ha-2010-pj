@@ -40,8 +40,8 @@ def main(path):
         if not os.path.exists(image_directory + '/' + 'stft_test/'):
             os.makedirs(image_directory + '/' + 'stft_test/')
 
-        filepath = image_directory + '/' + 'stft_test/' + filename + '.png'
-        fig.savefig(filepath, dpi=fig.dpi, bbox_inches='tight', pad_inches=0.0)
+        #filepath = image_directory + '/' + 'stft_test/' + filename + '.png'
+        #fig.savefig(filepath, dpi=fig.dpi, bbox_inches='tight', pad_inches=0.0)
 
 
     create_stft(path)
