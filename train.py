@@ -19,7 +19,7 @@ from wettbewerb import load_references
 # 2 | WARNING | Filter out INFO & WARNING messages
 # 3 | ERROR | Filter out all messages
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import time
 
 # ToDo: Update requirements.txt at the end of project
@@ -57,10 +57,10 @@ def train_images():
     source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/model.py
     '''
     filepath = 'model_images'  #input("Enter the filename you want your model to be saved as: ")
-    train_path = '../training_images' #input("Enter the directory of the training images: ")
-    valid_path = '../test_images' #input("Enter the directory of the validation images: ")
+    train_path = '../training_images_200' #input("Enter the directory of the training images: ")
+    valid_path = '../test_images_500' #input("Enter the directory of the validation images: ")
 
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 
     batch_size = 32
 
@@ -68,15 +68,28 @@ def train_images():
     print(model.summary())
 
     gen = ImageDataGenerator()
-    test_gen = gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE)
-    train_gen = gen.flow_from_directory(train_path, target_size=IMAGE_SIZE)
+    #train_gen = gen.flow_from_directory(train_path, target_size=IMAGE_SIZE)
+    #test_gen = gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE)
 
     train_generator = gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,)
     valid_generator = gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,)
     callbacks_list = [checkpoint]
 
-    r = model.fit(train_generator, validation_data=valid_generator, epochs=50,
-                             steps_per_epoch=356702 // batch_size, validation_steps=39634 // batch_size, callbacks=callbacks_list)
+    # ToDo: find right length of trining data,
+    trainings_samples = train_generator.samples
+    validation_samples = valid_generator.samples
+
+    """
+    WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least 
+    `steps_per_epoch * epochs` batches (in this case, 557300 batches). You may need to use the repeat() function when building your dataset.
+    
+    WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least 
+    `steps_per_epoch * epochs` batches (in this case, 1238 batches). You may need to use the repeat() function when building your dataset.
+    
+     W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+    """
+    r = model.fit(train_generator, validation_data=valid_generator, epochs=10, callbacks=callbacks_list,
+                  steps_per_epoch=trainings_samples // batch_size, validation_steps=validation_samples // batch_size)     # epochs=50
 
     return r, model
 
@@ -120,7 +133,7 @@ def create_model():
     model.add(BatchNormalization())
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
 
-    # The prevous step gices an output of multi dimentional data, which cannot be fead directly into the feed forward neural network. Hence, the model is flattened
+    # The prevous step gives an output of multi dimentional data, which cannot be fead directly into the feed forward neural network. Hence, the model is flattened
     model.add(Flatten())
     # One hidden layer of 2048 neurons have been used in order to have better classification results    # ToDo: compare classification results for different sizes of hidden layer
     model.add(Dense(2048))  # , kernel_initializer='normal', activation='relu'))
