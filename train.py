@@ -57,8 +57,8 @@ def train_images():
     source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/model.py
     '''
     filepath = 'model_images'  #input("Enter the filename you want your model to be saved as: ")
-    train_path = '../training_images_200' #input("Enter the directory of the training images: ")
-    valid_path = '../test_images_500' #input("Enter the directory of the validation images: ")
+    train_path = '../training_images' #input("Enter the directory of the training images: ")
+    valid_path = '../test_images' #input("Enter the directory of the validation images: ")
 
     checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 
