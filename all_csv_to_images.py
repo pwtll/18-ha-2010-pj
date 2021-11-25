@@ -10,7 +10,7 @@ from scipy.io import loadmat
 import biosppy
 import cv2
 
-
+# ToDo: Research: normalization of data necessary?
 def main():
     def segmentation(path):
         csv_data = loadmat(path)

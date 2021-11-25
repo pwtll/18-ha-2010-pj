@@ -21,11 +21,14 @@ def main():
         csv_data = loadmat(path)
         data = np.array(csv_data['val'][0])
 
+        # ToDo: Research: normalization of data necessary?
+        # ToDo: compare STFT-spectrograms using raw & normalized data
+
 
         fig = plt.figure()
 
         # ToDo: define correct sized Hamming window (see: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.specgram.html)
-        plt.specgram(data, cmap='nipy_spectral', Fs=sampling_rate,
+        plt.specgram(data, cmap='nipy_spectral', Fs=sampling_rate,      # ToDo: test model accuracy with different colormaps)
                      sides='twosided', scale='dB') #, NFFT=64, noverlap=32)  # , NFFT=128, noverlap=64
 
         ''' 
