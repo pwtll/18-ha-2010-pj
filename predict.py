@@ -17,6 +17,8 @@ from typing import List, Tuple
 import tensorflow as tf
 import tensorflow as tf
 from keras.models import model_from_json
+
+import train
 from train import load_images
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
@@ -69,7 +71,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     #predictions = model.predict(ecg_leads)
 
     # File path
-    filepath = 'dataset/saved_model/'
+    filepath = train.train_path
     labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
               'AE', 'OE', 'UE', 'SCH', 'One', 'Two', 'Three', 'Four', 'Five']
 

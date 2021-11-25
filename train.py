@@ -23,9 +23,9 @@ chkp_filepath = 'model_images'   # Enter the filename you want your model to be 
 train_path = '../training_images_20'                        # Enter the directory of the training images
 valid_path = '../test_images_20'                        # Enter the directory of the validation images
 
-epochs = 20
+epochs = 50
 batch_size = 32
-image_size = 256
+image_size = 128
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 save_trained_model = False
 gpu_active = False
@@ -37,9 +37,7 @@ def get_num_of_classes():
 
 # load image data and convert it to the right dimensions to train the model. Image data augmentation is uses to generate training data
 def load_images():
-    train_gen = ImageDataGenerator(rescale=1. / 255, zoom_range=0.2, rotation_range=50,
-                                   width_shift_range=0.2, height_shift_range=0.2, shear_range=0.2,
-                                   horizontal_flip=True, fill_mode='nearest', validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
+    train_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
     test_gen = ImageDataGenerator(rescale=1. / 255)
 
     train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='training') #, class_mode='categorical')
