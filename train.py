@@ -1,17 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Beispiel Code und  Spielwiese
-
-"""
-
-
-import csv
-import scipy.io as sio
-import matplotlib.pyplot as plt
-import numpy as np
-from ecgdetectors import Detectors
-import os
-from wettbewerb import load_references
+# ToDo: Update requirements.txt at the end of project
+import time
+from glob import glob
+import tensorflow as tf
+from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import ModelCheckpoint
+import plots
+import models
 
 # To filter Warnings and Information logs
 # 0 | DEBUG | [Default] Print all messages
@@ -20,165 +14,107 @@ from wettbewerb import load_references
 # 3 | ERROR | Filter out all messages
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-import time
-
-# ToDo: Update requirements.txt at the end of project
-import keras
-from keras import backend as K
-from keras.models import Sequential
-from keras.layers import Input, Dense, Conv1D, Dropout, MaxPool1D, Flatten, Conv2D, MaxPool2D, BatchNormalization
-from sklearn.model_selection import train_test_split
-import tensorflow as tf
-from tensorflow.keras import optimizers
-from torch.nn.utils.rnn import pad_sequence
-import torch
-import numpy as np
-import keras
-from scipy import stats
-from keras.models import Sequential
-from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint
-import tensorflow as tf
-gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
-session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
 
-image_size = 128
-IMAGE_SIZE = [image_size, image_size]
+# gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+# session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-# DONE: preprocess data into images and train the model with image data instead of time series data
-# DONE: 1st attempt: simple images of ecg signal
-# ToDo: 2nd attempt: convert ecg signal via STFT into images ToDo: test accuracy with different colorcodings)
-# ToDo: 3rd attempt: convert ecg signal via Wavelet-transformation into images
-def train_images():
-    '''
-    source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/model.py
-    '''
-    filepath = 'model_images'  #input("Enter the filename you want your model to be saved as: ")
-    train_path = '../training_images_20' #input("Enter the directory of the training images: ")
-    valid_path = '../test_images_20' #input("Enter the directory of the validation images: ")
+chkp_filepath = 'model_images'   # Enter the filename you want your model to be saved as
+train_path = '../training_images_20'                        # Enter the directory of the training images
+valid_path = '../test_images_20'                        # Enter the directory of the validation images
 
-    checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+epochs = 20
+batch_size = 32
+image_size = 256
+IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
+save_trained_model = False
+gpu_active = False
 
-    batch_size = 32
 
-    model = create_model()
-    print(model.summary())
+def get_num_of_classes():
+    return len(glob(train_path + '/*'))
 
-    train_gen = ImageDataGenerator(rescale=1./255, validation_split=0.2) # rescale=1./255 to scale colors to values between [0,1]
-    test_gen = ImageDataGenerator(rescale=1./255)
 
-    train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,subset='training')
-    valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size,subset='validation')
-    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size)
-    callbacks_list = [checkpoint]
+# load image data and convert it to the right dimensions to train the model. Image data augmentation is uses to generate training data
+def load_images():
+    train_gen = ImageDataGenerator(rescale=1. / 255, zoom_range=0.2, rotation_range=50,
+                                   width_shift_range=0.2, height_shift_range=0.2, shear_range=0.2,
+                                   horizontal_flip=True, fill_mode='nearest', validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
+    test_gen = ImageDataGenerator(rescale=1. / 255)
 
-    # ToDo: find right length of trining data,
+    train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='training') #, class_mode='categorical')
+    valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='validation') #, class_mode='categorical')
+    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size) #, class_mode='categorical') # wird im moment noch nicht benutzt
+
+    return train_generator, valid_generator, test_generator
+
+
+# Train the model
+def train_model(model, train_generator, valid_generator):
+    checkpoint = ModelCheckpoint(chkp_filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [checkpoint]       # used to save checkpoints during training after each epoch     # currently unused
+
     trainings_samples = train_generator.samples
     validation_samples = valid_generator.samples
 
-    """
-    WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least 
-    `steps_per_epoch * epochs` batches (in this case, 557300 batches). You may need to use the repeat() function when building your dataset.
-    
-    WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least 
-    `steps_per_epoch * epochs` batches (in this case, 1238 batches). You may need to use the repeat() function when building your dataset.
-    
-     W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
-    
-    2021-11-16 12:27:12.944093: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
-    """
-    r = model.fit(train_generator, validation_data=valid_generator, epochs=10,
-                  steps_per_epoch=trainings_samples // batch_size, validation_steps=validation_samples // batch_size)     # epochs=50, callbacks=callbacks_list,
+    r = model.fit(train_generator, validation_data=valid_generator, epochs=epochs,
+                  steps_per_epoch=trainings_samples // batch_size, validation_steps=validation_samples // batch_size)  # , callbacks=callbacks_list,
+                # steps_per_epoch=len(trainings_samples),validation_steps=len(validation_samples))
 
     return r, model
 
-'''
-source: https://github.com/daimenspace/ECG-arrhythmia-classification-using-a-2-D-convolutional-neural-network./blob/master/model.py
-'''
-# ToDo: search in literature for suitable model architectures
-# Build the model
-def create_model():
-    # 2d cnn model for ecg image data
-    model = Sequential()
 
-    # We are using 4 convolution layers for feature extraction
-    model.add(Conv2D(64, (3, 3), strides=(1, 1), input_shape=[image_size, image_size, 3], kernel_initializer='glorot_uniform'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
+# Save the models and weight for future purposes
+def save_model(model, detailed_model_name):
+    timestr = time.strftime("%Y%m%d-%H%M%S")
 
-    # ToDo: consider using Dropout layers to prevent overfitting
-    #model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
+    model_directory = "dataset/saved_model/"
 
-    model.add(Conv2D(64, (3, 3), strides=(1, 1), kernel_initializer='glorot_uniform'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
+    if not os.path.exists(model_directory):
+        os.makedirs(model_directory)
 
-    model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))   # We use MaxPooling with a filter size of 2x2. This contributes to generalization
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), kernel_initializer='glorot_uniform')) # , kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
-
-    model.add(Conv2D(128, (3, 3), strides=(1, 1), kernel_initializer='glorot_uniform'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
-
-    model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), kernel_initializer='glorot_uniform'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
-
-    model.add(Conv2D(256, (3, 3), strides=(1, 1), kernel_initializer='glorot_uniform'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
-    model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
-
-    # The prevous step gives an output of multi dimentional data, which cannot be fead directly into the feed forward neural network. Hence, the model is flattened
-    model.add(Flatten())
-    # One hidden layer of 2048 neurons have been used in order to have better classification results    # ToDo: compare classification results for different sizes of hidden layer
-    model.add(Dense(2048))  # , kernel_initializer='normal', activation='relu'))
-    model.add(keras.layers.ELU())
-    model.add(BatchNormalization())
-    model.add(Dropout(0.5))
-    # The final neuron HAS to be of the same number as classes to predict and cannot be more than that.
-    model.add(Dense(4, activation='softmax'))  # , activation='sigmoid')) # ToDo: update number of classes
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-    return model
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(model_directory + detailed_model_name + ".json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(model_directory + detailed_model_name + ".h5")
+    print("\nSaved model to disk")
 
 
 if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
+    timestr = time.strftime("%Y%m%d-%H%M%S")
     start_time = time.time()
-    history, model = train_images()
+
+    # load image data
+    train_generator, valid_generator, test_generator = load_images()
+
+    # load model that uses transfer learning
+    model_, model_name = models.create_pretrained_model_densenet121()
+
+    # load model that uses custom architecture
+    # model_, model_name = models.create_custom_model_2d_cnn_v2
+
+    # View the structure of the model
+    # model_.summary()
+
+    # Train the model
+    history, model = train_model(model_, train_generator, valid_generator)
+
     pred_time = time.time() - start_time
-    print("Runtime", pred_time, "s")
+    print("\nRuntime", pred_time, "s")
 
-    #ToDo: save trained model in .npy format
-    model.save('saved_model/my_model')
+    detailed_model_name = model_name \
+                          + "-num_epochs_" + str(epochs) \
+                          + "-batch_size_" + str(batch_size) \
+                          + "-image_size_" + str(image_size) \
+                          + "_" + timestr
 
-    # Source: https://github.com/kelvintanidi/Sign-Language-Detection/blob/master/Sign_Language_Detection.ipynb
-    # save the models and weight for future purposes
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open("saved_model_json/model.json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights("saved_model_json/model.h5")
-    print("Saved model to disk")
+    if save_trained_model:
+        save_model(model, detailed_model_name)
+        plots.plot_model_structure(model, detailed_model_name)
 
-    # Plot the model Accuracy graph (Ideally, it should be Logarithmic shape)
-    plt.plot(history.history['accuracy'],'r',linewidth=3.0, label='Training Accuracy')
-    plt.plot(history.history['val_accuracy'],'b',linewidth=3.0, label='Testing Accuracy')
-    plt.legend(fontsize=18)
-    plt.xlabel('Epochs ', fontsize=16)
-    plt.ylabel('Accuracy', fontsize=16)
-    plt.title('Accuracy Curves', fontsize=16)
-
-    # Plot the model Loss graph (Ideally it should be Exponentially decreasing shape)
-    plt.plot(history.history['loss'], 'g', linewidth=3.0, label='Training Loss')
-    plt.plot(history.history['val_loss'], 'y', linewidth=3.0, label='Testing Loss')
-    plt.legend(fontsize=18)
-    plt.xlabel('Epochs ', fontsize=16)
-    plt.ylabel('Loss', fontsize=16)
-    plt.title('Loss Curves', fontsize=16)
+    # Plot the model accuracy graph
+    plots.plot_training_history(history)
+    # Plot the model accuracy and loss metrics
+    plots.plot_metrics(history)
