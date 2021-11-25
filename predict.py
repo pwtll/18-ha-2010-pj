@@ -71,9 +71,8 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     #predictions = model.predict(ecg_leads)
 
     # File path
-    filepath = train.train_path
-    labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-              'AE', 'OE', 'UE', 'SCH', 'One', 'Two', 'Three', 'Four', 'Five']
+    filepath = '../test_images_20'
+    labels = ['N', 'A', 'O', '~']
 
     # load json and create model
     json_file = open(filepath + 'model.json', 'r')

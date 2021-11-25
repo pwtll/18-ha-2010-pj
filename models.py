@@ -21,11 +21,12 @@ import train
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-train_path = train.train_path  # 'dataset/Image'
-image_size = train.image_size
-IMAGE_SIZE = train.IMAGE_SIZE
-#image_size = 32
-#IMAGE_SIZE = [image_size, image_size]
+#train_path = train.train_path  # 'dataset/Image'
+#image_size = train.image_size
+#IMAGE_SIZE = train.IMAGE_SIZE
+train_path = '../training_images_20'
+image_size = 128
+IMAGE_SIZE = [image_size, image_size]
 
 
 def get_num_of_classes():

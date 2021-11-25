@@ -27,8 +27,7 @@ epochs = 50
 batch_size = 32
 image_size = 128
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
-save_trained_model = False
-gpu_active = False
+save_trained_model = True
 
 
 def get_num_of_classes():
