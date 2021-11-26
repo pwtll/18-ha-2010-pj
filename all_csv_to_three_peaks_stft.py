@@ -49,9 +49,9 @@ def main(directory):
 
             # plot spectrogram
             # plt.plot(i)
-            # plt.xticks([]), plt.yticks([])
-            # for spine in plt.gca().spines.values():
-            #     spine.set_visible(False)
+            plt.xticks([]), plt.yticks([])
+            for spine in plt.gca().spines.values():
+                spine.set_visible(False)
             plt.close(fig)
             ''' 
             # Alternative spectrogram
