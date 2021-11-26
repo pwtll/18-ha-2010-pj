@@ -12,7 +12,7 @@ import cv2
 
 train_path = '../training_complete_6000/'
 image_directory = train_path + 'images/'
-image_size = 512  # 256
+image_size = 256  # 256
 
 
 # ToDo: Research: normalization of data necessary?

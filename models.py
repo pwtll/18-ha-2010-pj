@@ -25,7 +25,7 @@ import train
 #image_size = train.image_size
 #IMAGE_SIZE = train.IMAGE_SIZE
 train_path = '../training_images_20'
-image_size = 512
+image_size = 256
 IMAGE_SIZE = [image_size, image_size]
 
 

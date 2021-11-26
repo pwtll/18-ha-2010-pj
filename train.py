@@ -24,7 +24,7 @@ train_path = '../training_complete_6000/images/'                        # Enter 
 
 epochs = 30
 batch_size = 32
-image_size = 512
+image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 save_trained_model = True
 
