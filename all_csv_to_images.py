@@ -10,6 +10,11 @@ from scipy.io import loadmat
 import biosppy
 import cv2
 
+train_path = '../training_complete_6000/'
+image_directory = train_path + 'images/'
+image_size = 512  # 256
+
+
 # ToDo: Research: normalization of data necessary?
 def main():
     def segmentation(path):
@@ -28,9 +33,9 @@ def main():
             count += 1
         return signals
 
-    def signal_to_img(array, image_directory, filename, label):
-        if not os.path.exists(image_directory + '/' + label + '/' + filename):
-            os.makedirs(image_directory + '/' + label + '/' + filename)
+    def signal_to_img(array, directory_, filename_, label_):
+        if not os.path.exists(directory_ + '/' + label_ + '/' + filename_):
+            os.makedirs(directory_ + '/' + label_ + '/' + filename_)
 
             for count, i in enumerate(array):
                 fig = plt.figure(frameon=False)
@@ -39,27 +44,23 @@ def main():
                 for spine in plt.gca().spines.values():
                     spine.set_visible(False)
 
-                new_filepath = image_directory + '/' + label + '/' + filename + '/' + '{:05d}'.format(count) + '.png'
+                new_filepath = directory_ + '/' + label_ + '/' + filename_ + '/' + '{:05d}'.format(count) + '.png'
                 fig.savefig(new_filepath, bbox_inches='tight', pad_inches=0.0)
                 plt.close(fig)
 
                 # downsampling images to desired image_size
                 im_gray = cv2.imread(new_filepath, cv2.IMREAD_GRAYSCALE)
-                im_gray = cv2.resize(im_gray, (image_size, image_size), interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
+                im_gray = cv2.resize(im_gray, (image_size, image_size))  # , interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
                 cv2.imwrite(new_filepath, im_gray)
 
-    training_folder_csv = '../training'
-    image_directory = '../training_images'
-    image_size = 128  # 512
-
-    with open(os.path.join(training_folder_csv, 'REFERENCE.csv')) as csv_file:
+    with open(os.path.join(train_path, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile
         for row in csv_reader:
             filename = row[0]
             label = row[1]
             # Lade MatLab Datei
-            ecg_segments = segmentation(os.path.join(training_folder_csv, filename + '.mat'))
+            ecg_segments = segmentation(os.path.join(train_path, filename + '.mat'))
             signal_to_img(ecg_segments, image_directory, filename, label)
             print(str(row[0]))
 

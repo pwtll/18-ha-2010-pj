@@ -1,3 +1,10 @@
+# To filter Warnings and Information logs
+# 0 | DEBUG | [Default] Print all messages
+# 1 | INFO | Filter out INFO messages
+# 2 | WARNING | Filter out INFO & WARNING messages
+# 3 | ERROR | Filter out all messages
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from glob import glob
 import keras
 import keras.layers
@@ -13,19 +20,12 @@ import keras.optimizers
 import tensorflow as tf
 import train
 
-# To filter Warnings and Information logs
-# 0 | DEBUG | [Default] Print all messages
-# 1 | INFO | Filter out INFO messages
-# 2 | WARNING | Filter out INFO & WARNING messages
-# 3 | ERROR | Filter out all messages
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 #train_path = train.train_path  # 'dataset/Image'
 #image_size = train.image_size
 #IMAGE_SIZE = train.IMAGE_SIZE
 train_path = '../training_images_20'
-image_size = 128
+image_size = 512
 IMAGE_SIZE = [image_size, image_size]
 
 

@@ -1,7 +1,3 @@
-import matplotlib.pyplot as plt
-from keras.utils.vis_utils import plot_model
-from sklearn.metrics import roc_curve
-
 # To filter Warnings and Information logs
 # 0 | DEBUG | [Default] Print all messages
 # 1 | INFO | Filter out INFO messages
@@ -9,6 +5,10 @@ from sklearn.metrics import roc_curve
 # 3 | ERROR | Filter out all messages
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+import matplotlib.pyplot as plt
+from keras.utils.vis_utils import plot_model
+from sklearn.metrics import roc_curve
+
 
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 

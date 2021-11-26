@@ -6,6 +6,13 @@ Skript testet das vortrainierte Modell
 
 @author: Christoph Hoog Antink, Maurice Rohr
 """
+# To filter Warnings and Information logs
+# 0 | DEBUG | [Default] Print all messages
+# 1 | INFO | Filter out INFO messages
+# 2 | WARNING | Filter out INFO & WARNING messages
+# 3 | ERROR | Filter out all messages
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import csv
 import scipy.io as sio
@@ -15,22 +22,16 @@ from ecgdetectors import Detectors
 import os
 from typing import List, Tuple
 import tensorflow as tf
-import tensorflow as tf
-from keras.models import model_from_json
 
 import train
-from train import load_images
+from train import load_test_images
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+import preprocess_ecg_lead as prep
 import plots
+import glob
 
-# To filter Warnings and Information logs
-# 0 | DEBUG | [Default] Print all messages
-# 1 | INFO | Filter out INFO messages
-# 2 | WARNING | Filter out INFO & WARNING messages
-# 3 | ERROR | Filter out all messages
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
 def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
@@ -59,58 +60,50 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
 
 #------------------------------------------------------------------------------
 # Euer Code ab hier
-    predictions = list()
 
     #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
+    # ToDo: transform ecg_leads into image data and fit it with image_data_generator into the model
+    directory = '../workspace/'
+    for i, (ecg_lead, ecg_name) in enumerate(zip(ecg_leads, ecg_names)):
+        # segment ecg lead into segments containing 3 r-peaks each
+        ecg_segments = prep.segment_ecg_lead(ecg_lead, fs)
+        # convert arrays of segmented data into images and save them in working directory
+        test_image_directory = prep.segment_to_test_img(ecg_segments, ecg_name, directory)
 
-    # load previously trained model
-    #model = tf.keras.models.load_model('saved_model/my_model')
-    ## Check model architecture
-    #model.summary()
-#
-    #predictions = model.predict(ecg_leads)
+    # load generated images of 3 r-peak ecg segments
+    test_generator = load_test_images(directory)        # labelt die Bilder noch falsch. ToDo: Bilder ohne Labels laden (ohne Image-Data_generator)
 
-    # File path
-    filepath = '../test_images_20'
-    labels = ['N', 'A', 'O', '~']
-
-    # load json and create model
-    json_file = open(filepath + 'model.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into new model
-    loaded_model.load_weights(filepath + 'model.h5')
-    print("Loaded model from disk")
-
-    # A few random samples
-    train_generator, valid_generator, test_generator = load_images()
-
+    #labels = ['~', 'A', 'N', 'O']
+    model = prep.load_model_from_name(model_name)
     # Generate predictions for samples
-    predictions = loaded_model.predict(test_generator)  # , num_of_test_samples // batch_size+1)
+    predictions = list()
+    predictions = model.predict(test_generator)  # , num_of_test_samples // batch_size+1),
 
-    num_of_test_samples = test_generator.samples
-    batch_size = 32
+
+
+
 
     # Confution Matrix and Classification Report
     predicted_categories = tf.argmax(predictions, axis=1)
-    cm = confusion_matrix(test_generator.classes, predicted_categories)
+    #cm = confusion_matrix(test_generator.classes, predicted_categories)
+    #print('Confusion Matrix')
+    #print(cm)
+    #disp = ConfusionMatrixDisplay(confusion_matrix=cm)  # , display_labels=labels)
+    #disp.plot(cmap=plt.cm.Blues)
+    #plt.show()
+    #print('Classification Report')
+    #print(classification_report(test_generator.classes, predicted_categories))  # , target_names=labels))
 
-    print('Confusion Matrix')
-    print(cm)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-    disp.plot(cmap=plt.cm.Blues)
-    plt.show()
 
-    print('Classification Report')
-    print(classification_report(test_generator.classes, predicted_categories, target_names=labels))
 
-    # ToDo: Plot ROC curve
-    # plots.plot_roc("Train Baseline", train_labels, train_predictions_baseline, color=colors[0])
-    # plots.plot_roc("Test Baseline", test_labels, test_predictions_baseline, color=colors[0], linestyle='--')
-    # plots.plot_roc("Test Baseline", test_generator.classes, predicted_categories, color=plots.colors[0], linestyle='--')
-    # plt.legend(loc='lower right')
 
+    # ToDo: predicitons in richtiges Format bringen
+    '''
+    #assert isinstance(predictions[0], tuple), \
+    #AssertionError: Elemente der Liste predictions muss ein Tuple sein aber <class 'list'> gegenen.
+    '''
+
+    predictions = predictions.tolist()
     #------------------------------------------------------------------------------
     return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
                                

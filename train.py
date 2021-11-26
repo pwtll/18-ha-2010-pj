@@ -1,4 +1,11 @@
 # ToDo: Update requirements.txt at the end of project
+# To filter Warnings and Information logs
+# 0 | DEBUG | [Default] Print all messages
+# 1 | INFO | Filter out INFO messages
+# 2 | WARNING | Filter out INFO & WARNING messages
+# 3 | ERROR | Filter out all messages
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import time
 from glob import glob
 import tensorflow as tf
@@ -7,25 +14,17 @@ from keras.callbacks import ModelCheckpoint
 import plots
 import models
 
-# To filter Warnings and Information logs
-# 0 | DEBUG | [Default] Print all messages
-# 1 | INFO | Filter out INFO messages
-# 2 | WARNING | Filter out INFO & WARNING messages
-# 3 | ERROR | Filter out all messages
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
 chkp_filepath = 'model_images'   # Enter the filename you want your model to be saved as
-train_path = '../training_images_20'                        # Enter the directory of the training images
-valid_path = '../test_images_20'                        # Enter the directory of the validation images
+train_path = '../training_complete_6000/images/'                        # Enter the directory of the training images
+#valid_path = '../test_images_20'                        # Enter the directory of the validation images
 
-epochs = 50
+epochs = 30
 batch_size = 32
-image_size = 128
+image_size = 512
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 save_trained_model = True
 
@@ -34,17 +33,21 @@ def get_num_of_classes():
     return len(glob(train_path + '/*'))
 
 
-# load image data and convert it to the right dimensions to train the model. Image data augmentation is uses to generate training data
-def load_images():
+# load image data and convert it to the right dimensions to train the model
+def load_training_images():
     train_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
-    test_gen = ImageDataGenerator(rescale=1. / 255)
-
     train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='training') #, class_mode='categorical')
     valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='validation') #, class_mode='categorical')
-    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size) #, class_mode='categorical') # wird im moment noch nicht benutzt
 
-    return train_generator, valid_generator, test_generator
+    return train_generator, valid_generator
 
+
+# load image data and convert it to the right dimensions to test the model on unseen data
+def load_test_images(valid_path):
+    test_gen = ImageDataGenerator(rescale=1. / 255)
+    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True,
+                                                  batch_size=batch_size)  # , class_mode='categorical') # wird im moment noch nicht benutzt
+    return test_generator
 
 # Train the model
 def train_model(model, train_generator, valid_generator):
@@ -84,7 +87,7 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
     start_time = time.time()
 
     # load image data
-    train_generator, valid_generator, test_generator = load_images()
+    train_generator, valid_generator = load_training_images()
 
     # load model that uses transfer learning
     model_, model_name = models.create_pretrained_model_densenet121()

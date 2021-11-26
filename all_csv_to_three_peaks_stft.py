@@ -10,20 +10,18 @@ from scipy.io import loadmat
 import biosppy
 
 # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
-directory = 'c:/Wettbewerb/picture/training__images_stft_try2/'
+train_path = '../training_complete_6000/'
+image_directory = train_path + 'stft/'
+sampling_rate = 300
 
 
 def main(directory):
-    def create_stft(path):
-        sampling_rate = 300
-
-        filename = os.path.basename(path).split('.')[0]
-        csv_data = loadmat(path)
+    def segmentation(path_):
+        csv_data = loadmat(path_)
         data = np.array(csv_data['val'][0])
         signals = []
         count = 2
-        peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=300)[0]
-        # TODO Divide ECG data into segments of 3 peaks per image
+        peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=sampling_rate)[0]
         for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
             diff1 = abs(peaks[count - 2] - i)
             diff2 = abs(peaks[count + 2] - h)
@@ -32,52 +30,63 @@ def main(directory):
             signal = data[x:y]
             signals.append(signal)
             count += 3
+        return signals
 
-        fig = plt.figure()
+    def create_stft(signals_ , directory_, filename_, label_):
+        new_file_directory = directory_ + '/' + label_ + '/' + filename_ + '/'
+        if not os.path.exists(new_file_directory):
+            os.makedirs(new_file_directory)
 
-        # # ToDo: define correct sized Hamming window (see: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.specgram.html)
-        # plt.specgram(np.array(signals), cmap='nipy_spectral', Fs=sampling_rate,
-        #              sides='twosided', scale='dB') #, NFFT=64, noverlap=32)  # , NFFT=128, noverlap=64
-
-        ''' 
-        # Alternative spectrogram
-        f, t, Sxx = signal.spectrogram(data, sampling_rate) # , nperseg=64, noverlap=32 #, nperseg=sampling_rate)
-        plt.pcolormesh(t, f, Sxx, shading='auto', norm=colors.LogNorm(vmin=Sxx.min(), vmax=Sxx.max()), cmap='nipy_spectral') # , norm=colors.LogNorm(vmin=Sxx.min(), vmax=Sxx.max())  # , shading='gouraud'
-        #plt.ylim(f.min(), f.max())
-        plt.yscale('symlog')
-        plt.ylabel('Frequency [Hz]')
-        plt.xlabel('Time [sec]')
-        '''
-
-        if not os.path.exists(directory + filename):
-            os.makedirs(directory + filename)
-
-        for count, i in enumerate(signals):
+        for count, i in enumerate(signals_):
             fig = plt.figure(frameon=False)
-            # TODO creat segement_stft of "3 peaks per image"
-            plt.specgram(np.array(signals)[count], cmap='nipy_spectral', Fs=sampling_rate,
-                         sides='twosided', scale='dB')  # , NFFT=64, noverlap=32)  # , NFFT=128, noverlap=64
-            # plt.plot(i)
-            plt.xticks([]), plt.yticks([])
-            for spine in plt.gca().spines.values():
-                spine.set_visible(False)
+            # TODO: create segment_stft of "3 peaks per image"
+            # ToDo: define correct sized Hamming window (see: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.specgram.html)
+            # ToDo: add logrithmic y-axis
+            # ToDo: define correct time&frequency resolution
+            # ToDo: compare interpolated STFT with blockwise STFT
+            plt.specgram(np.array(signals_)[count], cmap='nipy_spectral', Fs=sampling_rate,
+                         sides='onesided', scale='dB')  # , NFFT=64, noverlap=32)  # , sides='twosided', NFFT=128, noverlap=64
 
-            new_filepath = directory + filename + '\\' + '{:05d}'.format(count) + '.png'
+            # plot spectrogram
+            # plt.plot(i)
+            # plt.xticks([]), plt.yticks([])
+            # for spine in plt.gca().spines.values():
+            #     spine.set_visible(False)
+            plt.close(fig)
+            ''' 
+            # Alternative spectrogram
+            f, t, Sxx = signal.spectrogram(data, sampling_rate) # , nperseg=64, noverlap=32 #, nperseg=sampling_rate)
+            plt.pcolormesh(t, f, Sxx, shading='auto', norm=colors.LogNorm(vmin=Sxx.min(), vmax=Sxx.max()), cmap='nipy_spectral') # , norm=colors.LogNorm(vmin=Sxx.min(), vmax=Sxx.max())  # , shading='gouraud'
+            #plt.ylim(f.min(), f.max())
+            plt.yscale('symlog')
+            plt.ylabel('Frequency [Hz]')
+            plt.xlabel('Time [sec]')
+            '''
+
+            new_filepath = new_file_directory + '{:05d}'.format(count) + '.png'
             fig.savefig(new_filepath, bbox_inches='tight', pad_inches=0.0)
             plt.close(fig)
 
         print(filename)
 
-        return directory
-
-    folder = '../training'
-    with open(os.path.join(folder, 'REFERENCE.csv')) as csv_file:
+    with open(os.path.join(train_path, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile
         for row in csv_reader:
             # Lade MatLab Datei
-            directory = create_stft(os.path.join(folder, row[0] + '.mat'))
-    return directory
+            filename = row[0]
+            label = row[1]
 
-# filepath = main()
-directory = main(directory)
+            # skip recreating already existing images
+            if os.path.exists(directory + filename):
+                continue
+
+            # Lade MatLab Datei
+            filepath = os.path.join(train_path, filename + '.mat')
+            ecg_segments = segmentation(filepath)
+            create_stft(ecg_segments, image_directory, filename, label)
+            print(str(row[0]))
+
+
+if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
+    main(image_directory)

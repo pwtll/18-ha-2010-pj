@@ -138,3 +138,5 @@ PREDICTIONS.csv
 
 # VS Code Data
 .vscode/
+
+/dataset/
