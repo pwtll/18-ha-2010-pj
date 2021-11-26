@@ -36,8 +36,8 @@ def get_num_of_classes():
 # load image data and convert it to the right dimensions to train the model
 def load_training_images():
     train_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
-    train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='training') #, class_mode='categorical')
-    valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=True, batch_size=batch_size, subset='validation') #, class_mode='categorical')
+    train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=False, batch_size=batch_size, subset='training') #, class_mode='categorical')
+    valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=False, batch_size=batch_size, subset='validation') #, class_mode='categorical')
 
     return train_generator, valid_generator
 
@@ -45,7 +45,7 @@ def load_training_images():
 # load image data and convert it to the right dimensions to test the model on unseen data
 def load_test_images(valid_path):
     test_gen = ImageDataGenerator(rescale=1. / 255)
-    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=True,
+    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=False, class_mode=None,
                                                   batch_size=batch_size)  # , class_mode='categorical') # wird im moment noch nicht benutzt
     return test_generator
 

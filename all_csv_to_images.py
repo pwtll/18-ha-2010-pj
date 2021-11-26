@@ -33,13 +33,14 @@ def main():
             count += 1
         return signals
 
-    def process_singe_img(row):
+    def process_single_img(row):
         filename = row[0]
         label = row[1]
         # Lade MatLab Datei
         ecg_segments = segmentation(os.path.join(train_path, filename + '.mat'))
         signal_to_img(ecg_segments, image_directory, filename, label)
         print(str(row[0]))
+
     def signal_to_img(array, directory_, filename_, label_):
         if not os.path.exists(directory_ + '/' + label_ + '/' + filename_):
             os.makedirs(directory_ + '/' + label_ + '/' + filename_)
@@ -63,7 +64,7 @@ def main():
     with open(os.path.join(train_path, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile, parallele Ausführung
-        Parallel(n_jobs=8)(delayed(process_singe_img)(row) for row in csv_reader) #number of cpus here?
+        Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader) #number of cpus here?
         #for row in csv_reader:
         #    filename = row[0]
         #    label = row[1]

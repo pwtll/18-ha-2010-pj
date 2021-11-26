@@ -62,7 +62,6 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
 # Euer Code ab hier
 
     #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
-    # ToDo: transform ecg_leads into image data and fit it with image_data_generator into the model
     directory = '../workspace/'
     for i, (ecg_lead, ecg_name) in enumerate(zip(ecg_leads, ecg_names)):
         # segment ecg lead into segments containing 3 r-peaks each
@@ -74,7 +73,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     test_generator = load_test_images(directory)        # labelt die Bilder noch falsch. ToDo: Bilder ohne Labels laden (ohne Image-Data_generator)
 
     #labels = ['~', 'A', 'N', 'O']
-    model = prep.load_model_from_name(model_name)
+    model = prep.load_model_from_name(model_name)   # ToDo: differentiate between 2 class & 4 class model
     # Generate predictions for samples
     predictions = list()
     predictions = model.predict(test_generator)  # , num_of_test_samples // batch_size+1),
