@@ -12,7 +12,7 @@ import cv2
 from joblib import Parallel, delayed
 
 
-train_path = '../training_complete_6000/'
+train_path = '../training/'
 image_directory = train_path + 'images_128/'  # 'images_256/'
 image_size = 128  # 256
 sampling_rate = 300

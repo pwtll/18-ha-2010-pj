@@ -23,7 +23,7 @@ import train
 train_path = train.train_path
 image_size = train.image_size
 IMAGE_SIZE = train.IMAGE_SIZE
-#train_path = '../training_complete_6000/images_128/'
+#train_path = '../training/images_128/'
 #image_size = 128
 #IMAGE_SIZE = [image_size, image_size]
 
@@ -145,11 +145,11 @@ def create_custom_model_1d_cnn():
     model.add(Flatten())
     # One hidden layer of 128 neurons have been used in order to have better classification resultsmodel.add(Dense(256, kernel_initializer='normal', activation='relu'))
     # ToDo: try multiple dropout & dense layers instead of flatten
-    # model.add(Dropout(0.5))
-    # model.add(Dense(128, kernel_initializer='normal', activation='relu'))
-    # model.add(Dropout(0.5))
-    # model.add(Dense(64, kernel_initializer='normal', activation='relu'))
-    # model.add(Dropout(0.5))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(64, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.5))
     model.add(Dense(units=128, kernel_initializer='normal', activation='relu'))
     model.add(Dropout(0.3))
     # The final neuron HAS to be 1 in number and cannot be more than that. This is because this is a binary classification problem and only 1 neuron is enough to denote the class '1' or '0'

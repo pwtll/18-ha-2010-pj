@@ -24,16 +24,16 @@ from wettbewerb import load_references
 
 epochs = 10
 batch_size = 32
-image_size = 128
+image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 binary_classification = False
 save_trained_model = True
 class_indices = {'A': 0, 'N': 1, 'O': 2, '~': 3}
 
 if binary_classification:
-    train_path = '../training_complete_6000/single_images_128_2_classes/'        # Enter the directory of the training images seperated in 2 classes
+    train_path = '../training/single_images_' + str(image_size) + '_2_classes/'        # Enter the directory of the training images seperated in 2 classes
 else:
-    train_path = '../training_complete_6000/single_images_128/'                  # Enter the directory of the training images seperated in 4 classes
+    train_path = '../training/single_images_' + str(image_size) + '/'                  # Enter the directory of the training images seperated in 4 classes
 chkp_filepath = 'dataset/model_training_checkpoints'                             # Enter the filename you want your model to be saved as
 
 
@@ -119,10 +119,10 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
     start_time = time.time()
 
     # load model that uses transfer learning
-    model_, model_name = models.create_pretrained_model_inception_v3()
+    # model_, model_name = models.create_pretrained_model_inception_v3()
 
     # load model that uses custom architecture
-    # model_, model_name = models.create_custom_model_1d_cnn()
+    model_, model_name = models.create_custom_model_1d_cnn()
     # model_, model_name = models.create_custom_model_2d_cnn_v2()
 
     # View the structure of the model
@@ -130,7 +130,8 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
 
 
     if "1d" in model_name:
-        ecg_leads, ecg_labels, fs, ecg_names = load_references()  # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name  # Sampling-Frequenz 300 Hz
+        train_path = '../training/'
+        ecg_leads, ecg_labels, fs, ecg_names = load_references(train_path)  # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name  # Sampling-Frequenz 300 Hz
         X_train, X_test, y_train, y_test = prep.train_test_split_ecg_leads(ecg_leads, ecg_labels)
         history = model_.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(X_test, y_test))
         model = model_

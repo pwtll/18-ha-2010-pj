@@ -13,7 +13,7 @@ from torch.nn.utils.rnn import pad_sequence
 import torch
 import tensorflow as tf
 
-image_size = 128  # 256
+image_size = 256  # 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 sampling_rate = 300
 

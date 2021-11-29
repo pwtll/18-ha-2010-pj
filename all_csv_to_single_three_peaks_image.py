@@ -11,11 +11,11 @@ import biosppy
 import cv2
 from joblib import Parallel, delayed
 
-
-train_path = '../training_complete_6000/'  # '../_temp'  # '../training_complete_6000/'
-image_directory = train_path + 'single_images_128/'  # 'images_256/'
-image_size = 128  # 256
+image_size = 256  # 256
 sampling_rate = 300
+
+train_path = '../training/'
+image_directory = train_path + 'single_images_' + str(image_size) + '/'     # Enter the directory for the training images seperated in their classes
 
 
 def main(directory):
