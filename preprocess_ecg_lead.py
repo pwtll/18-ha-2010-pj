@@ -60,6 +60,27 @@ def load_test_images(valid_path):
     return test_generator
 
 
+def preprocess_ecg_leads(ecg_leads_):
+    ecg_leads_list = list()
+
+    # create lists containing all data from all csv-files
+    for lead in ecg_leads_:
+        ecg_leads_list.append(np.array(lead).astype(np.float32))
+
+    # convert lists to numpy arrays
+    ecg_leads_array = np.array(ecg_leads_list)  # .astype(np.float32)
+    print("ecg_leads_array.shape \t" + str(ecg_leads_array.shape))
+
+    # fills variable length tensors with zeros until all tensors have equal dimensions as he longest sequence
+    X_test_tensor = pad_sequence([torch.tensor(x) for x in ecg_leads_array], batch_first=True)
+
+    X_test_tensor = np.expand_dims(X_test_tensor, -1)
+
+    print(X_test_tensor.shape)
+
+    return X_test_tensor
+
+
 def train_test_split_ecg_leads(ecg_leads_, ecg_labels_):
     ecg_leads_list = list()
     labels_list = list()

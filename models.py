@@ -23,11 +23,16 @@ import train
 train_path = train.train_path
 image_size = train.image_size
 IMAGE_SIZE = train.IMAGE_SIZE
-#train_path = '../training/images_128/'
-#image_size = 128
-#IMAGE_SIZE = [image_size, image_size]
+binary_classification = train.binary_classification
+# train_path = '../training/images_128/'
+# image_size = 256
+# IMAGE_SIZE = [image_size, image_size]
 
 
+if binary_classification:
+    crossentropy = 'binary_crossentropy'
+else:
+    crossentropy = 'categorical_crossentropy'
 
 
 def get_num_of_classes():
@@ -53,14 +58,15 @@ def create_pretrained_model_densenet121():
 
     # output layers - you can add more if you want
     x = Flatten()(vgg.output)
-    # x = Dense(1000, activation='relu')(x)
+    x = Dense(1000, activation='relu')(x)        # 1000
     prediction = Dense(num_of_classes, activation='softmax', name='predictions')(x)
 
     # create a model object
     model = Model(inputs=vgg.input, outputs=prediction)
 
     # tell the model what cost and optimization method to use
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(loss=crossentropy, optimizer=adam, metrics=['accuracy'])
 
     return model, 'pretrained_model_densenet121'
 
@@ -70,13 +76,16 @@ Source: https://github.com/krishnasahu29/SignLanguageRecognition/blob/main/vgg16
 '''
 def create_pretrained_model_vgg():
     num_of_classes = get_num_of_classes()
-    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+
     model = tf.keras.Sequential()
     model.add(VGG16(weights='imagenet', include_top=False, input_shape=[image_size, image_size, 3]))
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dense(num_of_classes, activation='softmax'))
-    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+
+    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(loss=crossentropy, optimizer=adam, metrics=['accuracy'])
+
     return model, 'pretrained_model_vgg'
 
 
@@ -120,43 +129,46 @@ def create_pretrained_model_inception_v3():
     x = layers.Dense(num_of_classes, activation='softmax')(x)
 
     model = Model(inception_v3_model.input, x)
-    model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
+    #model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
+    model.compile(loss=crossentropy, optimizer='adam', metrics=['accuracy'])
 
     return model, 'pretrained_model_inception_v3'
 
 
 # 1d cnn model for classifying ecg_lead data
 def create_custom_model_1d_cnn():
-    num_of_classes = get_num_of_classes()
+    #num_of_classes = get_num_of_classes()
+    num_of_classes = 4
     # The model architecture type is sequential hence that is used
     model = Sequential()
 
     # We are using 4 convolution layers for feature extraction
-    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu')) #input_shape=(18000, 1)))  # (256, 2)))
-    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
-    model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.2))
+    #model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu')) #input_shape=(18000, 1)))  # (256, 2)))
+    #model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    #model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
+    #model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    #model.add(Dropout(0.2))
     model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPool1D(pool_size=128))  # We use MaxPooling with a filter size of 128. This also contributes to generalization
     model.add(Dropout(0.2))
 
     # The prevous step gices an output of multi dimentional data, which cannot be fead directly into the feed forward neural network. Hence, the model is flattened
-    model.add(Flatten())
-    # One hidden layer of 128 neurons have been used in order to have better classification resultsmodel.add(Dense(256, kernel_initializer='normal', activation='relu'))
-    # ToDo: try multiple dropout & dense layers instead of flatten
-    model.add(Dropout(0.5))
-    model.add(Dense(128, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(64, kernel_initializer='normal', activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Flatten())            # ToDo: try multiple dropout & dense layers instead of flatten
+
+    # One hidden layer of 128 neurons have been used in order to have better classification results
+    #model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+    #model.add(Dropout(0.5))
+    #model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+    #model.add(Dropout(0.5))
+    #model.add(Dense(64, kernel_initializer='normal', activation='relu'))
+    #model.add(Dropout(0.5))
     model.add(Dense(units=128, kernel_initializer='normal', activation='relu'))
     model.add(Dropout(0.3))
-    # The final neuron HAS to be 1 in number and cannot be more than that. This is because this is a binary classification problem and only 1 neuron is enough to denote the class '1' or '0'
-    model.add(Dense(units=num_of_classes, activation='sigmoid'))     # , activation='softmax') ToDo: test multiple activation functions. sigmoid is better suited for binary classification
 
-    sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)   # ToDo: try different optimizers
-    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    # The final neuron HAS to be 1 in number and cannot be more than that. This is because this is a binary classification problem and only 1 neuron is enough to denote the class '1' or '0'
+    model.add(Dense(units=num_of_classes, activation='sigmoid'))        # , activation='softmax') ToDo: test multiple activation functions. sigmoid is better suited for binary classification
+    sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)          # ToDo: try different optimizers
+    model.compile(loss='sparse_categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])      # loss='sparse_categorical_crossentropy'# loss='binary_crossentropy'
 
     return model, 'custom_model_1d_cnn'
 
@@ -220,7 +232,7 @@ def create_custom_model_2d_cnn():
     model.add(Dropout(0.1))
     model.add(Dense(num_of_classes, activation='softmax'))
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss=crossentropy, optimizer='adam', metrics=['accuracy'])
     return model, 'custom_model_2d_cnn'
 
 
@@ -239,5 +251,5 @@ def create_custom_model_2d_cnn_v2():
     model.add(Dropout(0.2))
     model.add(Dense(num_of_classes, activation='softmax'))
     sgd = tf.optimizers.SGD(learning_rate=1e-2)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+    model.compile(loss=crossentropy, optimizer=sgd, metrics=['accuracy'])
     return model, 'custom_model_2d_cnn_v2'

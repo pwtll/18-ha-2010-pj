@@ -22,11 +22,11 @@ from wettbewerb import load_references
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-epochs = 10
-batch_size = 32
+epochs = 50
+batch_size = 64
 image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
-binary_classification = False
+binary_classification = True
 save_trained_model = True
 class_indices = {'A': 0, 'N': 1, 'O': 2, '~': 3}
 
@@ -80,6 +80,7 @@ def load_test_images(valid_path):
                                                   batch_size=1)  # , class_mode='categorical') # wird im moment noch nicht benutzt  # ToDo: use color_mode='grayscale'
     return test_generator
 
+
 # Train the model
 def train_model(model, train_generator, valid_generator):
     checkpoint = ModelCheckpoint(chkp_filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
@@ -119,15 +120,11 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
     start_time = time.time()
 
     # load model that uses transfer learning
-    # model_, model_name = models.create_pretrained_model_inception_v3()
+    model_, model_name = models.create_pretrained_model_densenet121()
 
     # load model that uses custom architecture
-    model_, model_name = models.create_custom_model_1d_cnn()
+    # model_, model_name = models.create_custom_model_1d_cnn()
     # model_, model_name = models.create_custom_model_2d_cnn_v2()
-
-    # View the structure of the model
-    # model_.summary()
-
 
     if "1d" in model_name:
         train_path = '../training/'
@@ -141,7 +138,6 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
         # Train the model
         history, model = train_model(model_, train_generator, valid_generator)
 
-
     pred_time = time.time() - start_time
     print("\nRuntime", pred_time, "s")
 
@@ -152,17 +148,17 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
         model_name = model_name + '_four_classes'
 
     detailed_model_name = timestr \
-                          + "_" + model_name \
+                          + "-" + model_name \
                           + "-num_epochs_" + str(epochs) \
                           + "-batch_size_" + str(batch_size) \
                           + "-image_size_" + str(image_size)
 
-
-
-
     if save_trained_model:
         save_model(model, detailed_model_name)
         plots.plot_model_structure(model, detailed_model_name)
+
+    # View the structure of the model
+    model_.summary()
 
     # Plot the model accuracy graph
     plots.plot_training_history(history)

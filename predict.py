@@ -33,7 +33,7 @@ import glob
 
 
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
-def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
+def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
     '''
     Parameters
     ----------
@@ -63,12 +63,15 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
     directory = '../workspace/'
 
-    # generate images of three-r-peak ecg segments from unknown ecg_lead
-    for i, (ecg_lead, ecg_name) in enumerate(zip(ecg_leads, ecg_names)):
-        # segment ecg lead into segments containing 3 r-peaks each
-        ecg_segments = prep.segmentation_ecg_lead(ecg_lead, fs)
-        # convert arrays of segmented data into images and save them in working directory
-        test_image_directory = prep.segment_to_single_test_img(ecg_segments, ecg_name, directory)
+    if '1d' in model_name:
+        X_test_tensor = prep.preprocess_ecg_leads(ecg_leads)
+    else:
+        # generate images of three-r-peak ecg segments from unknown ecg_lead
+        for i, (ecg_lead, ecg_name) in enumerate(zip(ecg_leads, ecg_names)):
+            # segment ecg lead into segments containing 3 r-peaks each
+            ecg_segments = prep.segmentation_ecg_lead(ecg_lead, fs)
+            # convert arrays of segmented data into images and save them in working directory
+            test_image_directory = prep.segment_to_single_test_img(ecg_segments, ecg_name, directory)
 
     # load generated images of 3 r-peak ecg segments
     test_generator = prep.load_test_images(directory)
@@ -97,6 +100,9 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     # division by the number of images in each subfolder provides one classification for all images
     steps_per_epoch = test_generator.n           #  test_generator.n // test_generator.batch_size
 
+    if '1d' in model_name:
+        history = model.predict(X_test_tensor)
+
     # Generate predictions for samples
     pred = model.predict(test_generator, steps=steps_per_epoch, verbose=1)
     predicted_class_indices = np.argmax(pred, axis=1)
@@ -110,15 +116,15 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     for tuple_ in predictions:
         print("ECG Name: " + tuple_[0] + "\t\t|\tPrediction: " + tuple_[1])
 
-    # Confution Matrix and Classification Report
-    #cm = confusion_matrix(test_generator.classes, predicted_class_indices)
-    #print('Confusion Matrix')
-    #print(cm)
-    #disp = ConfusionMatrixDisplay(confusion_matrix=cm)  # , display_labels=labels)
-    #disp.plot(cmap=plt.cm.Blues)
-    #plt.show()
-    #print('Classification Report')
-    #print(classification_report(test_generator.classes, predicted_class_indices))  # , target_names=labels))
+    # Confusion Matrix and Classification Report
+    cm = confusion_matrix(ecg_labels, predictions_list, labels=['A', 'N', 'O', '~'], margins = True)
+    print('Confusion Matrix')
+    print(cm)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['A', 'N', 'O', '~'])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.show()
+    print('Classification Report')
+    print(classification_report(ecg_labels, predictions_list, target_names=['A', 'N', 'O', '~']))  # test_generator.classes, predicted_class_indices))  # , target_names=labels))
 
     #------------------------------------------------------------------------------
     return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
