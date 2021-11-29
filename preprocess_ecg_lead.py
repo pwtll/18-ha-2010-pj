@@ -7,12 +7,14 @@ import biosppy
 import cv2
 from keras.models import model_from_json
 import glob
+from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from torch.nn.utils.rnn import pad_sequence
 import torch
 import tensorflow as tf
 
 image_size = 128  # 256
+IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 sampling_rate = 300
 
 
@@ -48,6 +50,14 @@ def load_model_from_name(model_name):
     print("Loaded model from disk")
 
     return loaded_model
+
+
+# load image data and convert it to the right dimensions to test the model on unseen data
+def load_test_images(valid_path):
+    test_gen = ImageDataGenerator(rescale=1. / 255)
+    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, color_mode='rgb', shuffle=False, class_mode=None,
+                                                  batch_size=1)  # , class_mode='categorical') # wird im moment noch nicht benutzt  # ToDo: use color_mode='grayscale'
+    return test_generator
 
 
 def train_test_split_ecg_leads(ecg_leads_, ecg_labels_):

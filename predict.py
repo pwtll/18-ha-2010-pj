@@ -23,8 +23,6 @@ import os
 from typing import List, Tuple
 import tensorflow as tf
 
-import train
-from train import load_test_images
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 import preprocess_ecg_lead as prep
@@ -73,7 +71,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         test_image_directory = prep.segment_to_single_test_img(ecg_segments, ecg_name, directory)
 
     # load generated images of 3 r-peak ecg segments
-    test_generator = load_test_images(directory)
+    test_generator = prep.load_test_images(directory)
 
     # load right model for classification problem
     if is_binary_classifier is True:

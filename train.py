@@ -150,11 +150,12 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
     else:
         model_name = model_name + '_four_classes'
 
-    detailed_model_name = model_name \
+    detailed_model_name = timestr \
+                          + "_" + model_name \
                           + "-num_epochs_" + str(epochs) \
                           + "-batch_size_" + str(batch_size) \
-                          + "-image_size_" + str(image_size) \
-                          + "_" + timestr
+                          + "-image_size_" + str(image_size)
+
 
 
 
