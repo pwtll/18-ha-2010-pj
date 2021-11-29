@@ -18,15 +18,16 @@ from keras.layers import Input, Lambda, Dense, Flatten, Conv1D, Dropout, MaxPool
 from keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense, Activation, BatchNormalization, Add, Input, ZeroPadding2D, AveragePooling2D,GlobalAveragePooling2D
 import keras.optimizers
 import tensorflow as tf
+
 import train
+train_path = train.train_path
+image_size = train.image_size
+IMAGE_SIZE = train.IMAGE_SIZE
+#train_path = '../training_complete_6000/images_128/'
+#image_size = 128
+#IMAGE_SIZE = [image_size, image_size]
 
 
-#train_path = train.train_path  # 'dataset/Image'
-#image_size = train.image_size
-#IMAGE_SIZE = train.IMAGE_SIZE
-train_path = '../training_images_20'
-image_size = 256
-IMAGE_SIZE = [image_size, image_size]
 
 
 def get_num_of_classes():
@@ -87,6 +88,9 @@ def create_pretrained_model_inception_v3():
     WEIGHTS_FILE = './inception_v3_weights_tf_dim_ordering_tf_kernels_notop.h5'
     num_of_classes = get_num_of_classes()
 
+    if num_of_classes == 2:
+        num_of_classes = 1      # only 1 output neuron necessary for binary classification
+
     inception_v3_model = InceptionV3(input_shape=(image_size, image_size, 3), include_top=False, weights='imagenet')
 
     # Not required --> inception_v3_model.load_weights(WEIGHTS_FILE)
@@ -119,6 +123,42 @@ def create_pretrained_model_inception_v3():
     model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
 
     return model, 'pretrained_model_inception_v3'
+
+
+# 1d cnn model for classifying ecg_lead data
+def create_custom_model_1d_cnn():
+    num_of_classes = get_num_of_classes()
+    # The model architecture type is sequential hence that is used
+    model = Sequential()
+
+    # We are using 4 convolution layers for feature extraction
+    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu')) #input_shape=(18000, 1)))  # (256, 2)))
+    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
+    model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(MaxPool1D(pool_size=128))  # We use MaxPooling with a filter size of 128. This also contributes to generalization
+    model.add(Dropout(0.2))
+
+    # The prevous step gices an output of multi dimentional data, which cannot be fead directly into the feed forward neural network. Hence, the model is flattened
+    model.add(Flatten())
+    # One hidden layer of 128 neurons have been used in order to have better classification resultsmodel.add(Dense(256, kernel_initializer='normal', activation='relu'))
+    # ToDo: try multiple dropout & dense layers instead of flatten
+    # model.add(Dropout(0.5))
+    # model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(64, kernel_initializer='normal', activation='relu'))
+    # model.add(Dropout(0.5))
+    model.add(Dense(units=128, kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.3))
+    # The final neuron HAS to be 1 in number and cannot be more than that. This is because this is a binary classification problem and only 1 neuron is enough to denote the class '1' or '0'
+    model.add(Dense(units=num_of_classes, activation='sigmoid'))     # , activation='softmax') ToDo: test multiple activation functions. sigmoid is better suited for binary classification
+
+    sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)   # ToDo: try different optimizers
+    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+    return model, 'custom_model_1d_cnn'
 
 
 # 2d cnn model for classifying image data
@@ -188,14 +228,14 @@ def create_custom_model_2d_cnn():
 def create_custom_model_2d_cnn_v2():
     num_of_classes = get_num_of_classes()
     model = Sequential()
-    model.add(Conv2D(16, (2,2), input_shape=[image_size, image_size, 3], activation='relu'))
+    model.add(Conv2D(128, (2,2), input_shape=[image_size, image_size, 3], activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
-    model.add(Conv2D(32, (3,3), activation='relu'))
+    model.add(Conv2D(128, (3,3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(3, 3), strides=(3, 3), padding='same'))
-    model.add(Conv2D(64, (5,5), activation='relu'))
+    model.add(Conv2D(256, (5,5), activation='relu'))
     model.add(MaxPooling2D(pool_size=(5, 5), strides=(5, 5), padding='same'))
     model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.2))
     model.add(Dense(num_of_classes, activation='softmax'))
     sgd = tf.optimizers.SGD(learning_rate=1e-2)

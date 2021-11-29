@@ -36,9 +36,12 @@ def main():
     def process_single_img(row):
         filename = row[0]
         label = row[1]
+
         # Lade MatLab Datei
         ecg_segments = segmentation(os.path.join(train_path, filename + '.mat'))
-        signal_to_img(ecg_segments, image_directory, filename, label)
+
+        # processes just a single r-peak ecg segment from the middle of the signal
+        signal_to_img(ecg_segments[len(ecg_segments)//2], image_directory, filename, label)
         print(str(row[0]))
 
     def signal_to_img(array, directory_, filename_, label_):
@@ -64,16 +67,17 @@ def main():
     with open(os.path.join(train_path, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile, parallele Ausführung
-        Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader) #number of cpus here?
+        Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader)  # number of cpus here?
+
         #for row in csv_reader:
         #    filename = row[0]
         #    label = row[1]
         #    # Lade MatLab Datei
         #     ecg_segments = segmentation(os.path.join(train_path, filename + '.mat'))
-        #    signal_to_img(ecg_segments, image_directory, filename, label)
+        #    # processes just a single r-peak ecg segment from the middle of the signal
+        #    signal_to_img(ecg_segments[len(ecg_segments) // 2], image_directory, filename, label)
+        #    # signal_to_img(ecg_segments, image_directory, filename, label)
         #    print(str(row[0]))
-
-
 
 
 if __name__ == '__main__':

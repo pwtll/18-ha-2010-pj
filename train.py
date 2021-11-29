@@ -9,24 +9,32 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import time
 from glob import glob
 import tensorflow as tf
+import numpy as np
+from sklearn.utils import class_weight
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint
 import plots
 import models
+import preprocess_ecg_lead as prep
+from wettbewerb import load_references
 
 
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-chkp_filepath = 'model_images'   # Enter the filename you want your model to be saved as
-train_path = '../training_complete_6000/images/'                        # Enter the directory of the training images
-#valid_path = '../test_images_20'                        # Enter the directory of the validation images
-
-epochs = 30
+epochs = 10
 batch_size = 32
-image_size = 256
+image_size = 128
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
+binary_classification = False
 save_trained_model = True
+class_indices = {'A': 0, 'N': 1, 'O': 2, '~': 3}
+
+if binary_classification:
+    train_path = '../training_complete_6000/single_images_128_2_classes/'        # Enter the directory of the training images seperated in 2 classes
+else:
+    train_path = '../training_complete_6000/single_images_128/'                  # Enter the directory of the training images seperated in 4 classes
+chkp_filepath = 'dataset/model_training_checkpoints'                             # Enter the filename you want your model to be saved as
 
 
 def get_num_of_classes():
@@ -35,9 +43,32 @@ def get_num_of_classes():
 
 # load image data and convert it to the right dimensions to train the model
 def load_training_images():
-    train_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.2)  # rescale=1./255 to scale colors to values between [0,1]
-    train_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=False, batch_size=batch_size, subset='training') #, class_mode='categorical')
-    valid_generator = train_gen.flow_from_directory(train_path, target_size=IMAGE_SIZE, shuffle=False, batch_size=batch_size, subset='validation') #, class_mode='categorical')
+    if binary_classification:
+        class_mode = 'binary'
+    else:
+        class_mode = 'categorical'
+
+    # ToDo: wähle aus den erstellten Bildern das auffälligste aus (zb mit niedrigstem/höchsten Frequenzpeak in fft)
+    train_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.2)  # , label_mode='categorical')  # rescale=1./255 to scale colors to values between [0,1]
+    train_generator = train_gen.flow_from_directory(train_path,
+                                                    target_size=IMAGE_SIZE,
+                                                    color_mode='rgb',
+                                                    shuffle=False,
+                                                    batch_size=batch_size,
+                                                    subset='training',
+                                                    class_mode=class_mode)
+                                                    # preprocessing_function=csv_to_three_peaks_image) # ToDO: define automatic preprocessing_function when implementation is finished
+
+    valid_generator = train_gen.flow_from_directory(train_path,
+                                                    target_size=IMAGE_SIZE,
+                                                    color_mode='rgb',
+                                                    shuffle=False,
+                                                    batch_size=batch_size,
+                                                    subset='validation',
+                                                    class_mode=class_mode)
+
+    class_occurences = dict(zip(*np.unique(train_generator.classes, return_counts=True)))
+    print("class_occurences: \t" + str(class_occurences))
 
     return train_generator, valid_generator
 
@@ -45,31 +76,32 @@ def load_training_images():
 # load image data and convert it to the right dimensions to test the model on unseen data
 def load_test_images(valid_path):
     test_gen = ImageDataGenerator(rescale=1. / 255)
-    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, shuffle=False, class_mode=None,
-                                                  batch_size=batch_size)  # , class_mode='categorical') # wird im moment noch nicht benutzt
+    test_generator = test_gen.flow_from_directory(valid_path, target_size=IMAGE_SIZE, color_mode='rgb', shuffle=False, class_mode=None,
+                                                  batch_size=1)  # , class_mode='categorical') # wird im moment noch nicht benutzt  # ToDo: use color_mode='grayscale'
     return test_generator
 
 # Train the model
 def train_model(model, train_generator, valid_generator):
     checkpoint = ModelCheckpoint(chkp_filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = [checkpoint]       # used to save checkpoints during training after each epoch     # currently unused
+    callbacks_list = [checkpoint]       # used to save checkpoints during training after each epoch
 
     trainings_samples = train_generator.samples
     validation_samples = valid_generator.samples
 
-    r = model.fit(train_generator, validation_data=valid_generator, epochs=epochs,
+    class_weights = class_weight.compute_class_weight(class_weight='balanced', classes=np.unique(train_generator.classes), y=train_generator.classes)
+    train_class_weights = dict(zip(np.unique(train_generator.classes), class_weights))
+
+    print("train_class_weights: \t" + str(train_class_weights))
+
+    r = model.fit(train_generator, validation_data=valid_generator, epochs=epochs, class_weight=train_class_weights,
                   steps_per_epoch=trainings_samples // batch_size, validation_steps=validation_samples // batch_size)  # , callbacks=callbacks_list,
-                # steps_per_epoch=len(trainings_samples),validation_steps=len(validation_samples))
 
     return r, model
 
 
 # Save the models and weight for future purposes
 def save_model(model, detailed_model_name):
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-
     model_directory = "dataset/saved_model/"
-
     if not os.path.exists(model_directory):
         os.makedirs(model_directory)
 
@@ -86,29 +118,45 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
     timestr = time.strftime("%Y%m%d-%H%M%S")
     start_time = time.time()
 
-    # load image data
-    train_generator, valid_generator = load_training_images()
-
     # load model that uses transfer learning
-    model_, model_name = models.create_pretrained_model_densenet121()
+    model_, model_name = models.create_pretrained_model_inception_v3()
 
     # load model that uses custom architecture
-    # model_, model_name = models.create_custom_model_2d_cnn_v2
+    # model_, model_name = models.create_custom_model_1d_cnn()
+    # model_, model_name = models.create_custom_model_2d_cnn_v2()
 
     # View the structure of the model
     # model_.summary()
 
-    # Train the model
-    history, model = train_model(model_, train_generator, valid_generator)
+
+    if "1d" in model_name:
+        ecg_leads, ecg_labels, fs, ecg_names = load_references()  # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name  # Sampling-Frequenz 300 Hz
+        X_train, X_test, y_train, y_test = prep.train_test_split_ecg_leads(ecg_leads, ecg_labels)
+        history = model_.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(X_test, y_test))
+        model = model_
+    else:
+        # load image data
+        train_generator, valid_generator = load_training_images()
+        # Train the model
+        history, model = train_model(model_, train_generator, valid_generator)
+
 
     pred_time = time.time() - start_time
     print("\nRuntime", pred_time, "s")
+
+    # load right model for classification problem
+    if binary_classification is True:
+        model_name = model_name + '_two_classes'
+    else:
+        model_name = model_name + '_four_classes'
 
     detailed_model_name = model_name \
                           + "-num_epochs_" + str(epochs) \
                           + "-batch_size_" + str(batch_size) \
                           + "-image_size_" + str(image_size) \
                           + "_" + timestr
+
+
 
     if save_trained_model:
         save_model(model, detailed_model_name)

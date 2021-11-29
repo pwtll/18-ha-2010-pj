@@ -13,8 +13,8 @@ from joblib import Parallel, delayed
 
 
 train_path = '../training_complete_6000/'
-image_directory = train_path + 'images_256/'
-image_size = 256  # 256
+image_directory = train_path + 'images_128/'  # 'images_256/'
+image_size = 128  # 256
 sampling_rate = 300
 
 
@@ -71,20 +71,20 @@ def main(directory):
         # Iteriere über jede Zeile, parallele Ausführung
         Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader)  # number of cpus here?
 
-        # # Iteriere über jede Zeile
-        # for row in csv_reader:
-        #     filename = row[0]
-        #     label = row[1]
+        # Iteriere über jede Zeile
+        #for row in csv_reader:
+        #    filename = row[0]
+        #    label = row[1]
 
-        #     # skip recreating already existing images
-        #     if os.path.exists(directory + filename):
-        #         continue
+        #    # skip recreating already existing images
+        #    if os.path.exists(directory + filename):
+        #        continue
 
-        #     # Lade MatLab Datei
-        #     filepath = os.path.join(train_path, filename + '.mat')
-        #     ecg_segments = segmentation(filepath)
-        #     segment_to_img(ecg_segments, image_directory, filename, label)
-        #     print(str(row[0]))
+        #    # Lade MatLab Datei
+        #    filepath = os.path.join(train_path, filename + '.mat')
+        #    ecg_segments = segmentation(filepath)
+        #    # segment_to_img(ecg_segments, image_directory, filename, label)
+        #    print(str(row[0]))
 
 
 if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
