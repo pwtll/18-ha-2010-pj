@@ -15,7 +15,7 @@ image_size = 256  # 256
 sampling_rate = 300
 
 train_path = '../training/'
-image_directory = train_path + 'single_images__testt' + str(image_size) + '/'     # Enter the directory for the training images seperated in their classes
+image_directory = train_path + 'single_images_' + str(image_size) + '/'     # Enter the directory for the training images seperated in their classes
 
 
 def main(directory):
