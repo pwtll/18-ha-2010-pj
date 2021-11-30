@@ -108,9 +108,9 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
 
     if '1d' in model_name:
         history = model.predict(X_test_tensor)
-
-    # Generate predictions for samples
-    pred = model.predict(test_generator, steps=steps_per_epoch, verbose=1)
+    else:
+        # Generate predictions for samples
+        pred = model.predict(test_generator, steps=steps_per_epoch, verbose=1)
     predicted_class_indices = np.argmax(pred, axis=1)
 
     labels = {'A': 0, 'N': 1, 'O': 2, '~': 3}

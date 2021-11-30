@@ -20,7 +20,7 @@ import time
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict given Model')
-    parser.add_argument('--test_dir', action='store',type=str,default='../test_pred/')  # ToDo: reset to: default='../test/'
+    parser.add_argument('--test_dir', action='store',type=str,default='../test/')  # ToDo: reset to: default='../test/'
     parser.add_argument('--model_name', action='store',type=str,default='dataset/saved_model/20211130-004913-pretrained_model_densenet121_two_classes-num_epochs_40-batch_size_32-image_size_256-acc_0.8373-val_acc_0.7554')  # ,default='model.npy')
     args = parser.parse_args()
     

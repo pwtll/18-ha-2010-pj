@@ -151,17 +151,17 @@ def create_pretrained_model_inception_v3():
 
 # 1d cnn model for classifying ecg_lead data
 def create_custom_model_1d_cnn():
-    #num_of_classes = get_num_of_classes()
-    num_of_classes = 4
+    num_of_classes = get_num_of_classes()
+    #num_of_classes = 4
     # The model architecture type is sequential hence that is used
     model = Sequential()
 
     # We are using 4 convolution layers for feature extraction
-    #model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu')) #input_shape=(18000, 1)))  # (256, 2)))
-    #model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
-    #model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
-    #model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
-    #model.add(Dropout(0.2))
+    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu')) #input_shape=(18000, 1)))  # (256, 2)))
+    model.add(Conv1D(filters=512, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.2))  # This is the dropout layer. It's main function is to inactivate 20% of neurons in order to prevent overfitting
+    model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Dropout(0.2))
     model.add(Conv1D(filters=256, kernel_size=32, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPool1D(pool_size=128))  # We use MaxPooling with a filter size of 128. This also contributes to generalization
     model.add(Dropout(0.2))

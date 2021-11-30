@@ -12,10 +12,12 @@ import cv2
 from joblib import Parallel, delayed
 
 
-train_path = '../training/'
-image_directory = train_path + 'images_128/'  # 'images_256/'
-image_size = 128  # 256
+image_size = 256  # 256
 sampling_rate = 300
+
+train_path = '../training/'
+image_directory = train_path + 'images_256/'  # 'images_256/'
+
 
 
 def main(directory):
@@ -24,7 +26,7 @@ def main(directory):
         data = np.array(csv_data['val'][0])
         signals = []
         count = 2
-        peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=sampling_rate)[0]
+        peaks = biosppy.signals.ecg.hamilton_segmenter(signal=data, sampling_rate=sampling_rate)[0]  # christov_segmenter
         for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
             diff1 = abs(peaks[count - 2] - i)
             diff2 = abs(peaks[count + 2] - h)
