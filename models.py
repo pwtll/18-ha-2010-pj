@@ -31,12 +31,17 @@ binary_classification = train.binary_classification
 
 if binary_classification:
     crossentropy = 'binary_crossentropy'
+    activation = 'sigmoid'
 else:
     crossentropy = 'categorical_crossentropy'
+    activation = 'softmax'
 
 
 def get_num_of_classes():
-    return len(glob(train_path + '/*'))
+    if binary_classification:
+        return 1
+    else:
+        return len(glob(train_path + '/*'))
 
 
 # Build the model by transfer learning. This is done by using a pretrained network for feature extraction (DenseNet121)
@@ -58,8 +63,8 @@ def create_pretrained_model_densenet121():
 
     # output layers - you can add more if you want
     x = Flatten()(vgg.output)
-    x = Dense(1000, activation='relu')(x)        # 1000
-    prediction = Dense(num_of_classes, activation='softmax', name='predictions')(x)
+    x = Dense(1024, activation='relu')(x)        # 1000
+    prediction = Dense(num_of_classes, activation=activation, name='predictions')(x)
 
     # create a model object
     model = Model(inputs=vgg.input, outputs=prediction)
@@ -77,14 +82,23 @@ Source: https://github.com/krishnasahu29/SignLanguageRecognition/blob/main/vgg16
 def create_pretrained_model_vgg():
     num_of_classes = get_num_of_classes()
 
-    model = tf.keras.Sequential()
-    model.add(VGG16(weights='imagenet', include_top=False, input_shape=[image_size, image_size, 3]))
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(num_of_classes, activation='softmax'))
+    model = VGG16(weights='imagenet', include_top=False, input_shape=[image_size, image_size, 3])
 
-    adam = tf.keras.optimizers.Adam(learning_rate=0.001)
-    model.compile(loss=crossentropy, optimizer=adam, metrics=['accuracy'])
+    # mark loaded layers as not trainable
+    for layer in model.layers:
+        layer.trainable = False
+
+    # add new classifier layers
+    flat = Flatten()(model.layers[-1].output)
+    dense = Dense(256, activation='relu', kernel_initializer='he_uniform')(flat)     # 128
+    output = Dense(num_of_classes, activation=activation)(dense)
+
+    # define new model
+    model = Model(inputs=model.inputs, outputs=output)
+    # compile model
+    opt = tf.optimizers.SGD(learning_rate=0.001, momentum=0.9)          # ToDo: try different optimizers
+    # opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(optimizer=opt, loss=crossentropy, metrics=['accuracy'])
 
     return model, 'pretrained_model_vgg'
 
@@ -126,7 +140,7 @@ def create_pretrained_model_inception_v3():
     x = layers.GlobalAveragePooling2D()(inception_output)
     x = layers.Dense(1024, activation='relu')(x)
     # Not required --> x = layers.Dropout(0.2)(x)
-    x = layers.Dense(num_of_classes, activation='softmax')(x)
+    x = layers.Dense(num_of_classes, activation=activation)(x)
 
     model = Model(inception_v3_model.input, x)
     #model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
@@ -230,7 +244,7 @@ def create_custom_model_2d_cnn():
     model.add(Dropout(0.2))
     model.add(Dense(2048, activation='relu'))
     model.add(Dropout(0.1))
-    model.add(Dense(num_of_classes, activation='softmax'))
+    model.add(Dense(num_of_classes, activation=activation))
 
     model.compile(loss=crossentropy, optimizer='adam', metrics=['accuracy'])
     return model, 'custom_model_2d_cnn'
@@ -249,7 +263,7 @@ def create_custom_model_2d_cnn_v2():
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.2))
-    model.add(Dense(num_of_classes, activation='softmax'))
+    model.add(Dense(num_of_classes, activation=activation))
     sgd = tf.optimizers.SGD(learning_rate=1e-2)
     model.compile(loss=crossentropy, optimizer=sgd, metrics=['accuracy'])
     return model, 'custom_model_2d_cnn_v2'

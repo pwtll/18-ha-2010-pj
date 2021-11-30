@@ -22,8 +22,8 @@ from wettbewerb import load_references
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-epochs = 50
-batch_size = 64
+epochs = 40
+batch_size = 32
 image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 binary_classification = True
@@ -151,16 +151,30 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
                           + "-" + model_name \
                           + "-num_epochs_" + str(epochs) \
                           + "-batch_size_" + str(batch_size) \
-                          + "-image_size_" + str(image_size)
+                          + "-image_size_" + str(image_size) \
+                          #+ "-acc_" + str(round(history.history['accuracy'], 4)) \
+                          #+ "-val_acc_" + str(round(history.history['val_accuracy'], 4))
 
     if save_trained_model:
         save_model(model, detailed_model_name)
         plots.plot_model_structure(model, detailed_model_name)
 
     # View the structure of the model
-    model_.summary()
+    # model_.summary()
 
     # Plot the model accuracy graph
     plots.plot_training_history(history)
     # Plot the model accuracy and loss metrics
     plots.plot_metrics(history)
+
+    detailed_model_name = timestr \
+                          + "-" + model_name \
+                          + "-num_epochs_" + str(epochs) \
+                          + "-batch_size_" + str(batch_size) \
+                          + "-image_size_" + str(image_size) \
+                          + "-acc_" + str(round(history.history['accuracy'][-1], 4)) \
+                          + "-val_acc_" + str(round(history.history['val_accuracy'][-1], 4))
+
+    if save_trained_model:
+        save_model(model, detailed_model_name)
+        plots.plot_model_structure(model, detailed_model_name)

@@ -15,7 +15,7 @@ image_size = 256  # 256
 sampling_rate = 300
 
 train_path = '../training/'
-image_directory = train_path + 'single_images_' + str(image_size) + '/'     # Enter the directory for the training images seperated in their classes
+image_directory = train_path + 'single_images__testt' + str(image_size) + '/'     # Enter the directory for the training images seperated in their classes
 
 
 def main(directory):
@@ -24,7 +24,8 @@ def main(directory):
         data = np.array(csv_data['val'][0])
         signals = []
         count = 2
-        peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=sampling_rate)[0]
+        peaks = biosppy.signals.ecg.hamilton_segmenter(signal=data, sampling_rate=sampling_rate)[0]
+        # ToDo: mehrere segmenter hintereinanderschalten wenn segmentierung nicht geklappt hat
         for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
             diff1 = abs(peaks[count - 2] - i)
             diff2 = abs(peaks[count + 2] - h)

@@ -78,6 +78,10 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
 
     # load right model for classification problem
     if is_binary_classifier is True:
+        classes = ['A', 'N']
+        ecg_labels = ['A' if label_ == 'O' else label_ for label_ in ecg_labels]
+        ecg_labels = ['A' if label_ == '~' else label_ for label_ in ecg_labels]
+
         model = prep.load_model_from_name(model_name)
 
         # tell the model what cost and optimization method to use
@@ -86,6 +90,8 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     else:
+        classes = ['A', 'N', 'O', '~']
+
         model = prep.load_model_from_name(model_name)
 
         # tell the model what cost and optimization method to use
@@ -98,7 +104,7 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
     # model.evaluate(generator=test_generator, steps=(test_generator.n//test_generator.batch_size))
 
     # division by the number of images in each subfolder provides one classification for all images
-    steps_per_epoch = test_generator.n           #  test_generator.n // test_generator.batch_size
+    steps_per_epoch = test_generator.n // test_generator.batch_size          #  test_generator.n // test_generator.batch_size
 
     if '1d' in model_name:
         history = model.predict(X_test_tensor)
@@ -117,14 +123,14 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
         print("ECG Name: " + tuple_[0] + "\t\t|\tPrediction: " + tuple_[1])
 
     # Confusion Matrix and Classification Report
-    cm = confusion_matrix(ecg_labels, predictions_list, labels=['A', 'N', 'O', '~'], margins = True)
+    cm = confusion_matrix(ecg_labels, predictions_list, labels=classes)
     print('Confusion Matrix')
     print(cm)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['A', 'N', 'O', '~'])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
     disp.plot(cmap=plt.cm.Blues)
     plt.show()
     print('Classification Report')
-    print(classification_report(ecg_labels, predictions_list, target_names=['A', 'N', 'O', '~']))  # test_generator.classes, predicted_class_indices))  # , target_names=labels))
+    print(classification_report(ecg_labels, predictions_list, target_names=classes))  # test_generator.classes, predicted_class_indices))  # , target_names=labels))
 
     #------------------------------------------------------------------------------
     return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
