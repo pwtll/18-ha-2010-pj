@@ -71,22 +71,22 @@ def main(directory):
     with open(os.path.join(train_path, 'REFERENCE.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # Iteriere über jede Zeile, parallele Ausführung
-        Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader)  # number of cpus here?
+        # Parallel(n_jobs=8)(delayed(process_single_img)(row) for row in csv_reader)  # number of cpus here?
 
         # Iteriere über jede Zeile
-        #for row in csv_reader:
-        #    filename = row[0]
-        #    label = row[1]
+        for row in csv_reader:
+            filename = row[0]
+            label = row[1]
 
-        #    # skip recreating already existing images
-        #    if os.path.exists(directory + filename):
-        #        continue
+            # skip recreating already existing images
+            if os.path.exists(directory + filename):
+                continue
 
-        #    # Lade MatLab Datei
-        #    filepath = os.path.join(train_path, filename + '.mat')
-        #    ecg_segments = segmentation(filepath)
-        #    # segment_to_img(ecg_segments, image_directory, filename, label)
-        #    print(str(row[0]))
+            # Lade MatLab Datei
+            filepath = os.path.join(train_path, filename + '.mat')
+            ecg_segments = segmentation(filepath)
+            # segment_to_img(ecg_segments, image_directory, filename, label)
+            print(str(row[0]))
 
 
 if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
