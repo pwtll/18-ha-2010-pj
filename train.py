@@ -22,18 +22,18 @@ from wettbewerb import load_references
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-epochs = 50
+epochs = 40
 batch_size = 32
 image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
-binary_classification = True
+binary_classification = False
 save_trained_model = True
 class_indices = {'A': 0, 'N': 1, 'O': 2, '~': 3}
 
 if binary_classification:
-    train_path = '../training/single_images_' + str(image_size) + '_2_classes/'        # Enter the directory of the training images seperated in 2 classes
+    train_path = '../training/images_hamilton_' + str(image_size) + '_2_classes/'        # Enter the directory of the training images seperated in 2 classes
 else:
-    train_path = '../training/single_images_' + str(image_size) + '/'                  # Enter the directory of the training images seperated in 4 classes
+    train_path = '../training/images_hamilton_' + str(image_size) + '/'                  # Enter the directory of the training images seperated in 4 classes
 chkp_filepath = 'dataset/model_training_checkpoints'                             # Enter the filename you want your model to be saved as
 
 
@@ -157,12 +157,16 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
 
     if save_trained_model:
         save_model(model, detailed_model_name)
-        plots.plot_model_structure(model, detailed_model_name)
+        # plots.plot_model_structure(model, detailed_model_name)
 
     # View the structure of the model
-    # model_.summary()
+    #  model_.summary()
+
+    plot_directory = "dataset/plots/"
+    if not os.path.exists(plot_directory):
+        os.makedirs(plot_directory)
 
     # Plot the model accuracy graph
-    plots.plot_training_history(history)
+    plots.plot_training_history(history, plot_directory + detailed_model_name)
     # Plot the model accuracy and loss metrics
-    plots.plot_metrics(history)
+    plots.plot_metrics(history, plot_directory + detailed_model_name)

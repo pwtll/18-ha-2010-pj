@@ -16,7 +16,7 @@ image_size = 256  # 256
 sampling_rate = 300
 
 train_path = '../training/'
-image_directory = train_path + 'images_256/'  # 'images_256/'
+image_directory = train_path + 'images_hamilton_' + str(image_size) + '/'   # 'images_256/'
 
 
 

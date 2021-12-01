@@ -22,7 +22,7 @@ def plot_model_structure(model_, detailed_model_name):
 
 # ToDo: save plots with detailed_model_name
 # Plot the model Accuracy graph
-def plot_training_history(history):
+def plot_training_history(history, filename):
     fig, (ax1, ax2) = plt.subplots(2)
     fig.suptitle('Training and Validation loss')
 
@@ -51,10 +51,11 @@ def plot_training_history(history):
     ax2.grid(which='minor', linestyle=':', linewidth='0.5', color='black')      # Customize the minor grid
 
     fig.tight_layout()
-    plt.show()
+    plt.savefig(filename=filename)
+    # plt.show()
 
 
-def plot_metrics(history):
+def plot_metrics(history, filename):
     metrics = ['accuracy', 'loss']  #, 'precision', 'recall']
 
     for n, metric in enumerate(metrics):
@@ -73,7 +74,8 @@ def plot_metrics(history):
 
         plt.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig(filename=filename)
+    # plt.show()
 
 
 def plot_roc(name, labels, predictions, **kwargs):

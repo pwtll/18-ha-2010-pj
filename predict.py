@@ -72,6 +72,10 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
             ecg_segments = prep.segmentation_ecg_lead(ecg_lead, fs)
             # convert arrays of segmented data into images and save them in working directory
             test_image_directory = prep.segment_to_single_test_img(ecg_segments, ecg_name, directory)
+            # ToDo: segment into multiple images
+            # ToDo: write function that reads number of created images in for each ecg signal
+            # ToDo: write function that maps predictions to created images
+            # ToDO: majority voting between predictions of all images belonging to same ecg signal
 
     # load generated images of 3 r-peak ecg segments
     test_generator = prep.load_test_images(directory)
@@ -82,7 +86,8 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
         ecg_labels = ['A' if label_ == 'O' else label_ for label_ in ecg_labels]
         ecg_labels = ['A' if label_ == '~' else label_ for label_ in ecg_labels]
 
-        model = prep.load_model_from_name(model_name)
+        #model = prep.load_model_from_name(model_name)
+        model = prep.load_latest_model()
 
         # tell the model what cost and optimization method to use
         # sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)  # ToDo: try different optimizers
@@ -92,7 +97,8 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
     else:
         classes = ['A', 'N', 'O', '~']
 
-        model = prep.load_model_from_name(model_name)
+        #model = prep.load_model_from_name(model_name)
+        model = prep.load_latest_model()
 
         # tell the model what cost and optimization method to use
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])

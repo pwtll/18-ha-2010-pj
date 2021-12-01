@@ -25,7 +25,7 @@ def load_latest_model():
     list_of_files = glob.glob(filepath + '*')  # * means all if need specific format then *.csv
     latest_file = max(list_of_files, key=os.path.getmtime)
     head, tail = os.path.split(latest_file)
-    model_name = tail.split('.')[0]
+    model_name = tail.split('.h5')[0]
 
     # load json and create model
     json_file = open(filepath + model_name + '.json', 'r')
