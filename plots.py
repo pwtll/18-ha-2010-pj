@@ -74,7 +74,7 @@ def plot_metrics(history, filename):
 
         plt.legend()
     plt.tight_layout()
-    plt.savefig(fname=filename)
+    plt.savefig(fname=filename, dpi=fig.dpi)
     # plt.show()
 
 
