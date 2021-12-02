@@ -56,14 +56,21 @@ def create_pretrained_model_densenet121():
     vgg = DenseNet121(input_shape=IMAGE_SIZE + [3], weights='imagenet', include_top=False)
 
     # don't train existing weights
-    for layer in vgg.layers:
+    #for layer in vgg.layers:
+    #    layer.trainable = False
+
+    for layer in vgg.layers[:149]:
         layer.trainable = False
+    for layer in vgg.layers[149:]:
+        layer.trainable = True
 
     num_of_classes = get_num_of_classes()
 
     # output layers - you can add more if you want
     x = Flatten()(vgg.output)
-    x = Dense(1024, activation='relu')(x)        # 1000
+    x = Dense(512, activation='relu')(x)        # 1000
+    x = tf.keras.layers.Dropout(0.5)(x)
+
     prediction = Dense(num_of_classes, activation=activation, name='predictions')(x)
 
     # create a model object
