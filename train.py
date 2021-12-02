@@ -12,7 +12,7 @@ import tensorflow as tf
 import numpy as np
 from sklearn.utils import class_weight
 from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 import plots
 import models
 import preprocess_ecg_lead as prep
@@ -22,8 +22,8 @@ from wettbewerb import load_references
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-epochs = 40
-batch_size = 32
+epochs = 10
+batch_size = 64
 image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this
 binary_classification = False
@@ -83,8 +83,12 @@ def load_test_images(valid_path):
 
 # Train the model
 def train_model(model, train_generator, valid_generator):
+    # used to save checkpoints during training after each epoch
     checkpoint = ModelCheckpoint(chkp_filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
-    callbacks_list = [checkpoint]       # used to save checkpoints during training after each epoch
+    # simple early stopping
+    es_val_loss = EarlyStopping(monitor='val_loss', mode='min', patience=5, verbose=1, restore_best_weights=True)
+    es_val_acc  = EarlyStopping(monitor='val_accuracy', patience=5, min_delta=0.1, mode='max', restore_best_weights=True)  # val_acc has to improve by at least 0.1 for it to count as an improvement
+    callbacks_list = [checkpoint, es_val_acc]
 
     trainings_samples = train_generator.samples
     validation_samples = valid_generator.samples
