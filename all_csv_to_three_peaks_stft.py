@@ -21,7 +21,7 @@ def main(directory):
         data = np.array(csv_data['val'][0])
         signals = []
         count = 2
-        peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=sampling_rate)[0]
+        peaks = biosppy.signals.ecg.hamilton_segmenter(signal=data, sampling_rate=sampling_rate)[0]
         for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
             diff1 = abs(peaks[count - 2] - i)
             diff2 = abs(peaks[count + 2] - h)
@@ -44,7 +44,7 @@ def main(directory):
             # ToDo: add logrithmic y-axis
             # ToDo: define correct time&frequency resolution
             # ToDo: compare interpolated STFT with blockwise STFT
-            plt.specgram(np.array(signals_)[count], cmap='nipy_spectral', Fs=sampling_rate,
+            plt.specgram(np.array(signals_)[count], cmap='nipy_spectral', Fs=sampling_rate, NFFT=128, noverlap=64,
                          sides='onesided', scale='dB')  # , NFFT=64, noverlap=32)  # , sides='twosided', NFFT=128, noverlap=64
 
             # plot spectrogram
