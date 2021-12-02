@@ -68,7 +68,7 @@ def create_pretrained_model_densenet121():
 
     # output layers - you can add more if you want
     x = Flatten()(vgg.output)
-    x = Dense(512, activation='relu')(x)        # 1000
+    x = Dense(1024, activation='relu')(x)        # 1000
     x = tf.keras.layers.Dropout(0.5)(x)
 
     prediction = Dense(num_of_classes, activation=activation, name='predictions')(x)
