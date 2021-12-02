@@ -22,7 +22,7 @@ from wettbewerb import load_references
 # gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
 # session = tf.compat.v1.InteractiveSession(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
-epochs = 10
+epochs = 30
 batch_size = 64
 image_size = 256
 IMAGE_SIZE = [image_size, image_size]               # re-size all the images to this

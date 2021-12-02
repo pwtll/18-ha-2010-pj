@@ -56,8 +56,8 @@ def create_pretrained_model_densenet121():
     vgg = DenseNet121(input_shape=IMAGE_SIZE + [3], weights='imagenet', include_top=False)
 
     # don't train existing weights
-    #for layer in vgg.layers:
-    #    layer.trainable = False
+    # for layer in vgg.layers:
+    #     layer.trainable = False
 
     for layer in vgg.layers[:149]:
         layer.trainable = False
