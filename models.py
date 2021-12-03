@@ -47,7 +47,6 @@ def create_pretrained_model_densenet121():
     '''
     source: https://github.com/tshr-d-dragon/Sign_Language_Gesture_Detection/blob/main/DenseNet121_MobileNetv2_10epochs.ipynb
     '''
-    # ToDo: search in literature for suitable model architectures
 
     # add preprocessing layer to the front of VGG
     vgg = DenseNet121(input_shape=IMAGE_SIZE + [3], weights='imagenet', include_top=False)

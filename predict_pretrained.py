@@ -21,7 +21,7 @@ import time
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict given Model')
     parser.add_argument('--test_dir', action='store',type=str,default='../test/')
-    parser.add_argument('--model_name', action='store',type=str,default='20211203-003108-custom_model_2d_cnn_v2_four_classes-num_epochs_50-batch_size_64-image_size_256')  # ,default='model.npy')
+    parser.add_argument('--model_name', action='store',type=str,default='model_2d_cnn_v2_four_classes-num_epochs_50-batch_size_64-image_size_256')
     args = parser.parse_args()
     
     ecg_leads,ecg_labels,fs,ecg_names = load_references(args.test_dir)  # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name
