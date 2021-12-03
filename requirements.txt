@@ -1,6 +1,12 @@
-scipy==1.4.1
+biosppy==0.7.3
+joblib==1.1.0
+keras==2.7.0
 matplotlib==3.3.0
 numpy==1.18.5
-py-ecg-detectors==1.0.2
+opencv_python==4.5.4.58
 pandas==1.1.0
-mysql-connector-python==8.0.26
+py_ecg_detectors==1.0.2
+scikit_learn==1.0.1
+scipy==1.4.1
+tensorflow==2.7.0
+torch==1.10.0

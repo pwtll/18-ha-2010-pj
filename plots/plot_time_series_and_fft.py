@@ -23,6 +23,10 @@ params = {'mathtext.default': 'regular',
           }        # mathematische Achsenbeschriftungen
 plt.rcParams.update(params)
 
+# Cuts the data to remove irregular ecg measurements at the beginning of our ecg_leads
+ratio = 5       # removes first sixth of data
+data['val'] = data['val'][:,int(data['val'].size/ratio):]       # only keeps data from [data_length/ratio, end]
+
 number_of_data_points = range(data['val'].size)
 time = []
 for data_point in number_of_data_points:
