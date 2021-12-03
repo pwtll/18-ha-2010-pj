@@ -46,7 +46,6 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
 
     directory = '../workspace/'
 
-    #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
     if '1d' in model_name:
         X_test_tensor = prep.preprocess_ecg_leads(ecg_leads)
     else:
@@ -56,10 +55,6 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
             ecg_segments = prep.segmentation_ecg_lead(ecg_lead, fs)
             # convert arrays of segmented data into single images and save them in working directory
             test_image_directory = prep.segment_to_single_test_img(ecg_segments, ecg_name, directory)
-            # ToDo: segment into multiple images
-            # ToDo: write function that reads number of created images in for each ecg signal
-            # ToDo: write function that maps predictions to created images
-            # ToDO: majority voting between predictions of all images belonging to same ecg signal
 
     # load generated images of 3 r-peak ecg segments
     test_generator = prep.load_test_images(directory)
@@ -69,8 +64,6 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         model = prep.load_model_from_name(model_name)
 
         # tell the model what cost and optimization method to use
-        # sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)  # ToDo: try different optimizers
-        # model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     else:
@@ -104,6 +97,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     for tuple_ in predictions:
         print("ECG Name: " + tuple_[0] + "\t\t|\tPrediction: " + tuple_[1])
 
+    # delete the created temporary working directory to prevent conflicts during next training
     shutil.rmtree(directory)
 
     return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
