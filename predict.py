@@ -14,22 +14,10 @@ Skript testet das vortrainierte Modell
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-import csv
-import scipy.io as sio
-import matplotlib.pyplot as plt
 import numpy as np
-from ecgdetectors import Detectors
-import os
 from typing import List, Tuple
-import tensorflow as tf
-
-from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
 import preprocess_ecg_lead as prep
-
-import plots
-import glob
-
+import shutil
 
 
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
@@ -56,13 +44,9 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         ecg_name und eure Diagnose
     '''
 
-
-#------------------------------------------------------------------------------
-# Euer Code ab hier
-
-    #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
     directory = '../workspace/'
 
+    #ToDo: Add the same preprocessing steps to predict function as in train function to ensure same data format
     if '1d' in model_name:
         X_test_tensor = prep.preprocess_ecg_leads(ecg_leads)
     else:
@@ -90,8 +74,6 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     else:
-        classes = ['A', 'N', 'O', '~']
-
         model = prep.load_model_from_name(model_name)
 
         # tell the model what cost and optimization method to use
@@ -122,7 +104,8 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
     for tuple_ in predictions:
         print("ECG Name: " + tuple_[0] + "\t\t|\tPrediction: " + tuple_[1])
 
-    #------------------------------------------------------------------------------
+    shutil.rmtree(directory)
+
     return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
                                
                                
