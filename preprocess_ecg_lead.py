@@ -232,10 +232,10 @@ def segment_to_single_test_img(ecg_segments, ecg_name_, directory_):
             im_gray = cv2.resize(im_gray, (image_size, image_size)) #, interpolation=cv2.INTER_AREA)  # cv2.INTER_LANCZOS4) # ToDo: resize to 256x256 with correct interpolation method
             cv2.imwrite(new_filepath, im_gray)
 
-            #print("preprocessing successful: " + ecg_name_)
+            print("preprocessing successful: " + ecg_name_)
 
-        #else:
-        #    print("preprocessing failed: " + ecg_name_)
+        else:
+            print("preprocessing failed: " + ecg_name_)
 
             # save the filename of the errorneous ecg_lead in a logging file
             # open the file in the write mode
