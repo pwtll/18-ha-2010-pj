@@ -27,7 +27,7 @@ if __name__ == '__main__':
     ecg_leads,ecg_labels,fs,ecg_names = load_references(args.test_dir)  # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name
     
     start_time = time.time()
-    predictions = predict_labels(ecg_leads,fs,ecg_names,model_name=args.model_name)
+    predictions = predict_labels(ecg_leads,fs,ecg_names,model_name=args.model_name, is_binary_classifier=True)
     pred_time = time.time()-start_time
     
     save_predictions(predictions) # speichert Prädiktion in CSV Datei
