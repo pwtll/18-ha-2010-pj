@@ -24,9 +24,6 @@ train_path = train.train_path
 image_size = train.image_size
 IMAGE_SIZE = train.IMAGE_SIZE
 binary_classification = train.binary_classification
-# train_path = '../training/images_128/'
-# image_size = 256
-# IMAGE_SIZE = [image_size, image_size]
 
 
 if binary_classification:
@@ -56,13 +53,13 @@ def create_pretrained_model_densenet121():
     vgg = DenseNet121(input_shape=IMAGE_SIZE + [3], weights='imagenet', include_top=False)
 
     # don't train existing weights
-    # for layer in vgg.layers:
-    #     layer.trainable = False
-
-    for layer in vgg.layers[:149]:
+    for layer in vgg.layers:
         layer.trainable = False
-    for layer in vgg.layers[149:]:
-        layer.trainable = True
+
+    #for layer in vgg.layers[:149]:
+    #    layer.trainable = False
+    #for layer in vgg.layers[149:]:
+    #    layer.trainable = True
 
     num_of_classes = get_num_of_classes()
 

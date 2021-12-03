@@ -31,9 +31,9 @@ save_trained_model = True
 class_indices = {'A': 0, 'N': 1, 'O': 2, '~': 3}
 
 if binary_classification:
-    train_path = '../training/images_hamilton_' + str(image_size) + '_2_classes/'        # Enter the directory of the training images seperated in 2 classes
+    train_path = '../training/single_images_hamilton_' + str(image_size) + '_2_classes/'        # Enter the directory of the training images seperated in 2 classes
 else:
-    train_path = '../training/images_hamilton_' + str(image_size) + '/'                  # Enter the directory of the training images seperated in 4 classes
+    train_path = '../training/single_images_hamilton_' + str(image_size) + '/'                  # Enter the directory of the training images seperated in 4 classes
 chkp_filepath = 'dataset/model_training_checkpoints'                             # Enter the filename you want your model to be saved as
 
 
@@ -156,8 +156,8 @@ if __name__ == '__main__':  # bei multiprocessing auf Windows notwendig
                           + "-num_epochs_" + str(epochs) \
                           + "-batch_size_" + str(batch_size) \
                           + "-image_size_" + str(image_size) \
-                          + "-acc_" + str(round(history.history['accuracy'][-1], 4)) \
-                          + "-val_acc_" + str(round(history.history['val_accuracy'][-1], 4))
+                          #+ "-acc_" + str(round(history.history['accuracy'][-1], 4)) \
+                          #+ "-val_acc_" + str(round(history.history['val_accuracy'][-1], 4)) # ToDo: Punkte aus dateinamen entfernen
 
     if save_trained_model:
         save_model(model, detailed_model_name)

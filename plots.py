@@ -20,7 +20,6 @@ def plot_model_structure(model_, detailed_model_name):
     plot_model(model_, to_file='dataset/diagrams/' + detailed_model_name + '.png', show_shapes=True, show_layer_names=True)  # , rankdir='LR')  # for horizontal direction
 
 
-# ToDo: save plots with detailed_model_name
 # Plot the model Accuracy graph
 def plot_training_history(history, filename):
     fig, (ax1, ax2) = plt.subplots(2)
@@ -47,7 +46,7 @@ def plot_training_history(history, filename):
 
     ax2.set_axisbelow(True)                                                     # Don't allow the axis to be on top of your data
     ax2.minorticks_on()                                                         # Turn on the minor TICKS, which are required for the minor GRID
-    ax2.grid(which='major', linestyle='-', linewidth='0.5', color='black')        # Customize the major grid
+    ax2.grid(which='major', linestyle='-', linewidth='0.5', color='black')      # Customize the major grid
     ax2.grid(which='minor', linestyle=':', linewidth='0.5', color='black')      # Customize the minor grid
 
     fig.tight_layout()
