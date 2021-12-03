@@ -129,7 +129,7 @@ def segmentation(path_):
     data = np.array(csv_data['val'][0])
     signals = []
     count = 2
-    peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=sampling_rate)[0]
+    peaks = biosppy.signals.ecg.hamilton_segmenter(signal=data, sampling_rate=sampling_rate)[0]
     for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
         diff1 = abs(peaks[count - 2] - i)
         diff2 = abs(peaks[count + 2] - h)
@@ -145,7 +145,7 @@ def segmentation_ecg_lead(ecg_leads, fs):
     data = ecg_leads
     signals = []
     count = 2
-    peaks = biosppy.signals.ecg.christov_segmenter(signal=data, sampling_rate=fs)[0]
+    peaks = biosppy.signals.ecg.hamilton_segmenter(signal=data, sampling_rate=fs)[0]
     for i, h in zip(peaks[1:-1:3], peaks[3:-1:3]):
         diff1 = abs(peaks[count - 2] - i)
         diff2 = abs(peaks[count + 2] - h)

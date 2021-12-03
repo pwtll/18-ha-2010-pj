@@ -86,8 +86,8 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
         ecg_labels = ['A' if label_ == 'O' else label_ for label_ in ecg_labels]
         ecg_labels = ['A' if label_ == '~' else label_ for label_ in ecg_labels]
 
-        #model = prep.load_model_from_name(model_name)
-        model = prep.load_latest_model()
+        model = prep.load_model_from_name(model_name)
+        # model = prep.load_latest_model()
 
         # tell the model what cost and optimization method to use
         # sgd = tf.optimizers.SGD(learning_rate=0.001, momentum=0.5)  # ToDo: try different optimizers
@@ -97,8 +97,8 @@ def predict_labels(ecg_leads : List[np.ndarray], ecg_labels, fs : float, ecg_nam
     else:
         classes = ['A', 'N', 'O', '~']
 
-        #model = prep.load_model_from_name(model_name)
-        model = prep.load_latest_model()
+        model = prep.load_model_from_name(model_name)
+        # model = prep.load_latest_model()
 
         # tell the model what cost and optimization method to use
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
