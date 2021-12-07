@@ -10,8 +10,8 @@ from scipy.io import loadmat
 import biosppy
 
 # c:\Users\Philipp Witulla\PycharmProjects\training\train_ecg_00001.mat
-train_path = '../training_complete_6000/'
-image_directory = train_path + 'stft/'
+train_path = '../training/'
+image_directory = train_path + 'stft_ylog_base5/'
 sampling_rate = 300
 
 
@@ -32,7 +32,7 @@ def main(directory):
             count += 3
         return signals
 
-    def create_stft(signals_ , directory_, filename_, label_):
+    def create_stft(signals_, directory_, filename_, label_):
         new_file_directory = directory_ + '/' + label_ + '/' + filename_ + '/'
         if not os.path.exists(new_file_directory):
             os.makedirs(new_file_directory)
@@ -44,11 +44,13 @@ def main(directory):
             # ToDo: add logrithmic y-axis
             # ToDo: define correct time&frequency resolution
             # ToDo: compare interpolated STFT with blockwise STFT
-            plt.specgram(np.array(signals_)[count], cmap='nipy_spectral', Fs=sampling_rate, NFFT=128, noverlap=64,
+            Pxx, freqs, bins, im = plt.specgram(np.array(signals_)[count], NFFT=128, noverlap=64, cmap='nipy_spectral', Fs=sampling_rate,
                          sides='onesided', scale='dB')  # , NFFT=64, noverlap=32)  # , sides='twosided', NFFT=128, noverlap=64
 
             # plot spectrogram
             # plt.plot(i)
+            plt.ylim(freqs.min(), freqs.max())
+            plt.yscale('symlog', base=5)     # base=2,base=10 but have no significant difference
             plt.xticks([]), plt.yticks([])
             for spine in plt.gca().spines.values():
                 spine.set_visible(False)
